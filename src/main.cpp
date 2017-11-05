@@ -57,9 +57,9 @@ int main(int argc, char* const argv[])
         ("nloci,l"            , po::value<int>()            ->required(), "Number of loci.")
         ("pop_size,z"         , po::value<double>()         ->required()/*->default_value(0)*/, "Specifies population size for all populations.")
         ("seed,s"             , po::value<int>()            ->required(), "Random seed used to initialize variational parameters")
-        ("hold_out_fraction,f", po::value<double>()         ->default_value(0), "Fraction of loci to hold out.")
-        ("hold_out_seed,h"    , po::value<int>()            ->default_value(28149), "Random seed used to partition SNP data into hold out and training sets. Use the same seed across replicates to keep the hold out set fixed.")
-        ("labels,b"           , po::value<string>()         ->default_value(""), "Population labels for supervised analysis. Labels should be in {0,...,npops - 1}. One label per line in the same order as the input matrix. Individuals without a population assignment should be labeled by -1.");
+        ("hold_out_fraction,f", po::value<double>()         ->default_value(0), "Optional. Fraction of loci to hold out.")
+        ("hold_out_seed,h"    , po::value<int>()            ->default_value(28149), "Optional. Random seed used to partition SNP data into hold out and training sets. Use the same seed across replicates to keep the hold out set fixed.")
+        ("labels,b"           , po::value<string>()         ->default_value(""), "Optional. Population labels for supervised analysis. Labels should be in {0,...,npops - 1}. One label per line in the same order as the input matrix. Individuals without a population assignment should be labeled by -1.");
 
     if (argc <= 2) {
         cout << dystruct << endl;
