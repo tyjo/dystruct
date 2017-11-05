@@ -125,10 +125,10 @@ supp/data/BASELINE\100GEN\_10000LOCI\_120D\_01
 ## Output Files
 Dystruct outputs two files with point estimates for inferred parameters, and a temporary file to monitor convergence. The prefix of these files is specified through the --output command line argument. The inferred parameter files are:
 
-- freqs : the inferred allele frequencies at all time stes
+- freqs : the inferred allele frequencies at all time steps
 - theta : the inferred ancestry proportions for all samples
 
 Dystruct also outputs a temporary file, temp\_theta, with the current estimates of the variational parameters for ancestry proportions. Each row is an individual, and each column a population. The number in each entry refers to the number of loci currently assigned to a population. Dystrut uses a relatively strick convergence criterion, and this file can be used to moniter looser convergence criteria.
 
-## Monitering convergence
+## Monitoring convergence
 Dystruct outputs progress every 1000 iterations by displaying a global step size, and the average change in number of loci assigned to a population for each individual (appears as delta). Once the average loci assigned is less than 1 the algorithm terminates, as this is now beyond the precision available for point estimates.
