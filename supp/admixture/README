@@ -1,0 +1,4 @@
+After running simulations, run ./convert.sh to converge file output to
+a format ADMIXTURE can understand. Then run ./run_admixture.sh to
+run ADMIXTURE on all the datasets. This requires that the ADMIXTURE
+binary is in this directory.
