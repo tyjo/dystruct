@@ -46,10 +46,10 @@ SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double 
         picked.insert(draw);
 
         // pick a time
-        int t = tdist(gen);
+        int t = tdist(gen);;
 
         // pick an individual
-        boost::random::uniform_int_distribution<int> idist(0, snps[t].size() - 1);
+        boost::random::uniform_int_distribution<int> idist(0, (*snps)[t].size() - 1);
         int individual = idist(gen);
 
         // make sure we have data
