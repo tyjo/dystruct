@@ -87,13 +87,13 @@ Dystruct Program Usage:
                                       populations.
   -s [ --seed ] arg                   Random seed used to initialize 
                                       variational parameters
-  -f [ --hold_out_fraction ] arg (=0) Fraction of loci to hold out.
-  -h [ --hold_out_seed ] arg (=28149) Random seed used to partition SNP data 
-                                      into hold out and training sets. Use the 
-                                      same seed across replicates to keep the 
-                                      hold out set fixed.
-  -b [ --labels ] arg                 Population labels for supervised 
-                                      analysis. Labels should be in 
+  -f [ --hold_out_fraction ] arg (=0) Optional. Fraction of loci to hold out.
+  -h [ --hold_out_seed ] arg (=28149) Optional. Random seed used to partition 
+                                      SNP data into hold out and training sets.
+                                      Use the same seed across replicates to 
+                                      keep the hold out set fixed.
+  -b [ --labels ] arg                 Optional. Population labels for 
+                                      supervised analysis. Labels should be in 
                                       {0,...,npops - 1}. One label per line in 
                                       the same order as the input matrix. 
                                       Individuals without a population 
