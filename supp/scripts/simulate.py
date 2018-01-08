@@ -1,4 +1,4 @@
-#!/usr/bin/env/ python
+#!/usr/bin/env python
 
 # Simulate data under the Wright-Fisher model of genetic drift.
 import argparse
@@ -54,6 +54,7 @@ def generate_theta():
                 dr = np.random.dirichlet(alpha).tolist()
                 for k in range(K):
                     theta[t][d][k] = dr[k]
+            
             elif sim_set.lower() == "clustered":
                 if t == 0:
                     dr = np.random.dirichlet([20, 1, 1])
@@ -63,10 +64,12 @@ def generate_theta():
                     dr = np.random.dirichlet([1, 1, 20])
                 for k in range(K):
                     theta[t][d][k] = dr[k]
+            
             elif sim_set.lower() == "continuous":
                 for k in range(K):
                     theta[t][d][k] = 0.
                 theta[t][d][np.random.randint(0,3)] = 1.
+            
             # single ancestral population
             elif sim_set.lower() == "ancestral":
                 if t == 0:
@@ -76,6 +79,24 @@ def generate_theta():
                     dr = np.random.dirichlet([1,1])
                     for k in range(K):
                         theta[t][d][k] = dr[k]
+           
+            elif sim_set.lower() == "unbalanced":
+                if t == 0:
+                    theta[t][d][0] = 1
+                    for k in range(1, K):
+                        theta[t][d][k] = 0
+                elif t == len(sample_times) - 1:
+                    dr = np.random.dirichlet(alpha)
+                    for k in range(K):
+                        theta[t][d][k] = dr[k]
+                else:
+                    idx = np.random.randint(K - 1) + 1
+                    for k in range(K):
+                        if k == idx:
+                            theta[t][d][idx] = 1
+                        else:
+                            theta[t][d][k] = 0
+
             else:
                 print("bad simulation set")
                 sys.exit(1)
