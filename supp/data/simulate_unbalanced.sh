@@ -17,7 +17,7 @@ SAMPLES="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 11 0 0 0 0 0 0 0 0 0 0 
 PREFIX="UNBALANCED_100GEN_10000LOCI_508D"
 SET="unbalanced"
 
-for i in $(seq 1 11);
+for i in $(seq 1 10);
 do
     if [ ${i} -lt 10 ]; then
         FOLDER=${PREFIX}"_0"${i}
@@ -41,7 +41,7 @@ SAMPLES="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 PREFIX="UNBALANCED_200GEN_10000LOCI_508D"
 SET="unbalanced"
 
-for i in $(seq 1 11);
+for i in $(seq 1 10);
 do
     if [ ${i} -lt 10 ]; then
         FOLDER=${PREFIX}"_0"${i}
@@ -65,7 +65,7 @@ SAMPLES="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 PREFIX="UNBALANCED_400GEN_10000LOCI_508D"
 SET="unbalanced"
 
-for i in $(seq 1 11);
+for i in $(seq 1 10);
 do
     if [ ${i} -lt 10 ]; then
         FOLDER=${PREFIX}"_0"${i}
@@ -90,7 +90,7 @@ SAMPLES="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 PREFIX="UNBALANCED_800GEN_10000LOCI_508D"
 SET="unbalanced"
 
-for i in $(seq 1 11);
+for i in $(seq 1 10);
 do
     if [ ${i} -lt 10 ]; then
         FOLDER=${PREFIX}"_0"${i}
