@@ -20,6 +20,7 @@ class Cavi
          SNPData                 snp_data,
          boost::random::mt19937& gen,
          size_t                  nloci,
+         double                  step_power,
          vector2<int>            labels,
          bool                    using_labels = false);
 
@@ -30,9 +31,7 @@ class Cavi
     void run_stochastic();
     void initialize_variational_parameters();
 
-    // Compute a lower bound on the posterior 
-    // predictive distribution of the hold out 
-    // set given the current variational parameters
+    // Computes the log likelihood on a hold out set
     double compute_ho_log_likelihood();
 
     void   write_results(std::string out_file);
@@ -59,6 +58,7 @@ class Cavi
     vector2<int>                        nloci_indv;
     vector2<int>                        labels;
     vector2<int>                        sample_iter;    // store the number of iterations for each sample. use for step size
+    double                              step_power;     // determines step size per iteration. after first 10000 iterations, step size becomes (iteration - offset)^step_power
     bool                                using_labels = false;
     
     inline void   update_auxiliary_local(size_t t, size_t d, size_t l);

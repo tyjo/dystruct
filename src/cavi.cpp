@@ -60,6 +60,7 @@ Cavi::Cavi(int                     npops,
            SNPData                 snp_data,
            boost::random::mt19937& gen,
            size_t                  nloci,
+           double                  step_power,
            vector2<int>            labels,
            bool                    using_labels) :
            npops(npops),
@@ -73,6 +74,7 @@ Cavi::Cavi(int                     npops,
            theta(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()][npops]),
            nloci_indv(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
            sample_iter(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
+           step_power(step_power),
            labels(labels)
 {   
     this->mixture_prior = mixture_prior;
@@ -145,7 +147,6 @@ void Cavi::initialize_variational_parameters()
 
 
 
-// Lower bound on posterior predictive
 double Cavi::compute_ho_log_likelihood()
 {
     double log_lk = 0;
@@ -157,6 +158,9 @@ double Cavi::compute_ho_log_likelihood()
             for (size_t l = 0; l < nloci; ++l) {
                 if (!snp_data.hold_out(t,d,l) || snp_data.missing(t,d,l)) continue;
                 
+                load_auxiliary_parameters(l);
+                update_allele_frequencies(l);
+
                 s = 0;
                 for (size_t k = 0; k < npops; ++k)
                     s += theta[t][d][k];
@@ -183,7 +187,7 @@ bool Cavi::update_auxiliary_parameters(int sample)
     bool converged = true;
     for (size_t t = 0; t < nsteps; ++t) {
         
-        // better to parallelize inner loop since samples
+        // better to parallelize inner loop since sample
         // tend to be sparse in t but dense in d
         #pragma omp parallel for
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
@@ -298,6 +302,7 @@ void Cavi::update_mixture_proportions(int locus)
 {
     int l = locus;
     double step_size;
+    double offset    = 10000 - pow(0.01, 1. / step_power);
     for (size_t t = 0; t < nsteps; ++ t) {
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
             for (size_t k = 0; k < npops; ++k) {
@@ -307,7 +312,7 @@ void Cavi::update_mixture_proportions(int locus)
                 if (sample_iter[t][d] <= 10000)
                     step_size = pow(sample_iter[t][d] + 1, -0.5);
                 else
-                    step_size = pow((sample_iter[t][d] - 7825), -0.6);
+                    step_size = pow(sample_iter[t][d] - offset, step_power);
                 
                 update += snp_data.genotype(t, d, l)*phi[t][d][k] 
                                 + (2 - snp_data.genotype(t, d, l))*zeta[t][d][k];
@@ -330,6 +335,7 @@ void Cavi::run_stochastic()
     int    it        = 0;
     double ss        = 1;
     bool   converged = false;
+    double offset    = 10000 - pow(0.01, 1. / step_power);
 
     // monitor convergence
     vector3<double> prev_theta = theta;
@@ -342,7 +348,7 @@ void Cavi::run_stochastic()
 
         // monitor step size if no missing data
         if (it <= 10000) ss = pow(it + 1, -0.5);
-        else ss = pow((it - 7825), -0.6);
+        else ss = pow(it - offset, step_power);
 
         converged = false;
         while (!converged) {
@@ -360,7 +366,7 @@ void Cavi::run_stochastic()
             write_temp();
         }
     }
-    cout << "lower bound hold out posterior predictive:\t" << compute_ho_log_likelihood() << endl;
+    cout << "hold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
 }
 
 
