@@ -79,7 +79,7 @@ should output the list of Dystruct's command line arguments.
 
 ## Running Dystruct
 
-### Parallel computation
+### Parallel Computation
 Dystruct parallelizes certain sections of its algorithm for faster computation using the OpenMP library. To specify the number of threads OpenMP looks for the environment variable OMP\_NUM\_THREADS. Thus, if you want to use 2 threads, you should call
 
 ```
@@ -173,3 +173,8 @@ Dystruct additionally outputs current ancestry estimates in the file temp\_theta
 
 #### Labeled Data
 Dystruct takes an optional argument with population assignment for ancient samples. These are treated as known and fixed. Ancestry is inferred for the remaining unlabeled samples. This feature is currently experimental, and has yet to be thoroughly investigated using simulations.
+
+### Running Time
+Running time per iteration depends on two factors: i) how many times the algorithm has previously seen a loci, and ii) number of time points. Earlier iterations tend to be much slower than later iterations because it takes longer for the allele frequency estimates to converge. The time spent per iteration decreases after the first two or three cycles through each loci.
+
+The update step for allele frequency estimatation takes quadratic time with respect to the number of time points. Therefore it is desirable to group ancient samples into as few time points as possible. For example, ancient samples with overlapping confidence intervals for carbon date estimates should be combined into a single time point.
