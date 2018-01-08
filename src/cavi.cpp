@@ -155,7 +155,7 @@ double Cavi::compute_ho_log_likelihood()
     for (size_t t = 0; t < nsteps; ++t) {
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
             for (size_t l = 0; l < nloci; ++l) {
-                if (!snp_data.hold_out(t,d,l)) continue;
+                if (!snp_data.hold_out(t,d,l) || snp_data.missing(t,d,l)) continue;
                 
                 s = 0;
                 for (size_t k = 0; k < npops; ++k)
@@ -181,11 +181,16 @@ double Cavi::compute_ho_log_likelihood()
 bool Cavi::update_auxiliary_parameters(int sample)
 {
     bool converged = true;
-    vector<double> prev_phi(npops);
-    vector<double> prev_zeta(npops);
     for (size_t t = 0; t < nsteps; ++t) {
+        
+        // better to parallelize inner loop since samples
+        // tend to be sparse in t but dense in d
+        #pragma omp parallel for
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
             if (snp_data.hidden(t,d,sample)) continue;
+            vector<double> prev_phi(npops);
+            vector<double> prev_zeta(npops);
+            
             for (size_t k = 0; k < npops; ++k) {
                 prev_phi[k] = phi[t][d][k];
                 prev_zeta[k] = zeta[t][d][k];
@@ -193,8 +198,8 @@ bool Cavi::update_auxiliary_parameters(int sample)
             update_auxiliary_local(t,d,sample);
             
             for (size_t k = 0; k < npops; ++k) {
-                converged = (abs(prev_phi[k] - phi[t][d][k]) < 0.01) && converged;
-                converged = (abs(prev_zeta[k] - zeta[t][d][k]) < 0.01) && converged;
+                #pragma omp atomic write
+                converged = (abs(prev_zeta[k] - zeta[t][d][k]) < 0.01) && (abs(prev_phi[k] - phi[t][d][k]) < 0.01) && converged;
             }
         }
     }
