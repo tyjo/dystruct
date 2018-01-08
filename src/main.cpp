@@ -34,6 +34,7 @@ using std::insert_iterator;
 using std::map;
 using std::pair;
 using std::set;
+using std::setprecision;
 using std::setw;
 using std::skipws;
 using std::string;
@@ -50,16 +51,17 @@ int main(int argc, char* const argv[])
     po::options_description dystruct("Dystruct Program Usage");
     dystruct.add_options()
         ("help"               , "Print help message")
-        ("input,i"            , po::value<string>()         ->required(), "Genotype file path. An L x D matrix of genotypes, where the header is the sample time in generations." 
+        ("input"            , po::value<string>()         ->required(), "Genotype file path. An LOCI x INDIVIDUAL matrix of genotypes; the header is the sample time in generations." 
                                                                           " Samples must be ordered in increasing generation time.")
-        ("output,o"           , po::value<string>()         ->default_value(""), "A file prefix that is appended to all output files.")
-        ("npops,k"            , po::value<int>()            ->required(), "Number of populations.")
-        ("nloci,l"            , po::value<int>()            ->required(), "Number of loci.")
-        ("pop_size,z"         , po::value<double>()         ->required()/*->default_value(0)*/, "Specifies population size for all populations.")
-        ("seed,s"             , po::value<int>()            ->required(), "Random seed used to initialize variational parameters")
-        ("hold_out_fraction,f", po::value<double>()         ->default_value(0), "Optional. Fraction of loci to hold out.")
-        ("hold_out_seed,h"    , po::value<int>()            ->default_value(28149), "Optional. Random seed used to partition SNP data into hold out and training sets. Use the same seed across replicates to keep the hold out set fixed.")
-        ("labels,b"           , po::value<string>()         ->default_value(""), "Optional. Population labels for supervised analysis. Labels should be in {0,...,npops - 1}. One label per line in the same order as the input matrix. Individuals without a population assignment should be labeled by -1.");
+        ("output"           , po::value<string>()         ->default_value(""), "A file prefix for output files.")
+        ("npops"            , po::value<int>()            ->required(), "Number of populations.")
+        ("nloci"            , po::value<int>()            ->required(), "Number of loci. This should match the number of loci in the input file.")
+        ("pop_size"         , po::value<double>()         ->required(), "Specifies population size for all populations.")
+        ("seed"             , po::value<int>()            ->required(), "Random seed used to initialize variational parameters")
+        ("hold_out_fraction", po::value<double>()         ->default_value(0), "Optional. Partitions nloci * hold_out_fraction loci into a hold out set. The hold out set contains at most one site per individual.")
+        ("hold_out_seed"    , po::value<int>()            ->default_value(28149), "Optional. Random seed used to partition SNP data into hold out and training sets. Use the same seed across replicates to fix the hold out set.")
+        ("step_size_power"  , po::value<double>()         ->default_value(-0.6, "-0.6"), "Optional. Adjusts step size for stochastic variational inference. step_size = (iteration - offset)^step_power after the first 10000 iterations. The offset ensures the step size does jump between iteration 10000 and 10001. Must be in [-1,-0.5).")
+        ("labels"           , po::value<string>()         ->default_value(""), "Optional. Experimental. Population label file path. Population labels for supervised analysis. Labels should be in {0,...,npops - 1}. One label per line in the same order as the input matrix. Individuals without a population assignment should be labeled by -1.");
 
     if (argc <= 2) {
         cout << dystruct << endl;
@@ -82,11 +84,18 @@ int main(int argc, char* const argv[])
     int nloci                = vm["nloci"].as<int>(); 
     double hold_out_fraction = vm["hold_out_fraction"].as<double>();
     double pop_size          = vm["pop_size"].as<double>();
+    double step_power        = vm["step_size_power"].as<double>();
     string label_file        = vm["labels"].as<string>();
 
     // check input
     if (hold_out_fraction < 0 || hold_out_fraction >= 1) {
         cerr << "proportion of held out sites must be between in [0, 1)" << endl;
+        return 1;
+    }
+
+    if (step_power < -1 || step_power >= -0.5) {
+        cerr << "power for step size must be in the interval [-1, -0.5)" << endl;
+        return 1;
     }
     
     // initialize random number generator
@@ -107,7 +116,7 @@ int main(int argc, char* const argv[])
     }
 
     cout << "initializing variational parameters..." << endl;
-    Cavi cavi(npop, theta_prior, pop_size, snp_data, gen, nloci, labels);
+    Cavi cavi(npop, theta_prior, pop_size, snp_data, gen, nloci, step_power, labels);
 
     cout << "running..." << endl;
     cavi.run_stochastic();
