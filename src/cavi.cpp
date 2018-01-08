@@ -434,18 +434,6 @@ void Cavi::write_temp()
         }
     }
     out_theta.close();
-
-    ofstream out_freq("temp_freqs");
-    for (size_t t = 0; t < nsteps; ++t) {
-        out_freq << t << endl;
-        for (size_t l = 0; l < nloci; ++l) {
-            for (size_t k = 0; k < npops - 1; ++k) {
-                out_freq << freqs[t][k][l][0] << "\t";
-            }
-            out_freq << freqs[t][npops-1][l][0] << endl;
-        }
-    }
-    out_freq.close();
 }
 
 
