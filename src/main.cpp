@@ -137,53 +137,32 @@ int main(int argc, char* const argv[])
         }
     }
 
-    /*namespace po = boost::program_options;
-    po::options_description dystruct("Dystruct Program Usage");
-    dystruct.add_options()
-        ("help"               , "Print help message")
-        ("input"            , po::value<string>()         ->required(), "Genotype file path. An LOCI x INDIVIDUAL matrix of genotypes; the header is the sample time in generations." 
-                                                                          " Samples must be ordered in increasing generation time.")
-        ("output"           , po::value<string>()         ->default_value(""), "A file prefix for output files.")
-        ("npops"            , po::value<int>()            ->required(), "Number of populations.")
-        ("nloci"            , po::value<int>()            ->required(), "Number of loci. This should match the number of loci in the input file.")
-        ("pop_size"         , po::value<double>()         ->required(), "Specifies population size for all populations.")
-        ("seed"             , po::value<int>()            ->required(), "Random seed used to initialize variational parameters")
-        ("hold_out_fraction", po::value<double>()         ->default_value(0), "Optional. Partitions nloci * hold_out_fraction loci into a hold out set. The hold out set contains at most one site per individual.")
-        ("hold_out_seed"    , po::value<int>()            ->default_value(28149), "Optional. Random seed used to partition SNP data into hold out and training sets. Use the same seed across replicates to fix the hold out set.")
-        ("step_size_power"  , po::value<double>()         ->default_value(-0.6, "-0.6"), "Optional. Adjusts step size for stochastic variational inference. step_size = (iteration - offset)^step_power after the first 10000 iterations. The offset ensures the step size does jump between iteration 10000 and 10001. Must be in [-1,-0.5).")
-        ("labels"           , po::value<string>()         ->default_value(""), "Optional. Experimental. Population label file path. Population labels for supervised analysis. Labels should be in {0,...,npops - 1}. One label per line in the same order as the input matrix. Individuals without a population assignment should be labeled by -1.");
-
-    if (argc <= 2) {
-        cout << dystruct << endl;
-        return 1;
-    }
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, dystruct), vm);
-    po::notify(vm);
-
-    if (vm.count("help")) {
-        cout << dystruct << endl;
-        return 1;
-    }
-    
-    string in_file           = vm["input"].as<string>();
-    string out_file          = vm["output"].as<string>();
-    int random_seed          = vm["seed"].as<int>();
-    int hold_out_seed        = vm["hold_out_seed"].as<int>();
-    int npop                 = vm["npops"].as<int>(); 
-    int nloci                = vm["nloci"].as<int>(); 
-    double hold_out_fraction = vm["hold_out_fraction"].as<double>();
-    double pop_size          = vm["pop_size"].as<double>();
-    double step_power        = vm["step_size_power"].as<double>();
-    string label_file        = vm["labels"].as<string>();*/
-
     // check input
-    if (hold_out_fraction < 0 || hold_out_fraction >= 1) {
+    if (in_file == "") {
+        cerr << "missing argument: --input" << endl;
+        return 1;
+    }
+    else if (random_seed == 0) {
+        cerr << "missing argument: --seed" << endl;
+        return 1;
+    }
+    else if (random_seed < 0) {
+        cerr << "argument error: --seed must be a positive integer" << endl;
+        return 1;
+    }
+    else if (npop == 0) {
+        cerr << "missing argument: --npop" << endl;
+        return 1;
+    }
+    else if (nloci == 0) {
+        cerr << "missing argument: --nloci" << endl;
+        return 1;
+    }
+    else if (hold_out_fraction < 0 || hold_out_fraction >= 1) {
         cerr << "proportion of held out sites must be between in [0, 1)" << endl;
         return 1;
     }
-
-    if (step_power < -1 || step_power >= -0.5) {
+    else if (step_power < -1 || step_power >= -0.5) {
         cerr << "power for step size must be in the interval [-1, -0.5)" << endl;
         return 1;
     }
