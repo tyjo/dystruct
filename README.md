@@ -3,6 +3,16 @@ Dystruct is a model-based approach for inferring ancestry proportions from time-
 
 ## Getting Started
 
+### Quick Start
+
+```
+git clone https://github.com/tyjo/dystruct
+cd dystruct
+make
+./bin/dystruct
+./run.sh
+```
+
 ### Dependencies
 
 #### OpenMP
@@ -10,35 +20,6 @@ Dystruct depends on the OpenMP API for parallel computation. Unfortunately, Open
 
 ```
 brew install gcc6
-```
-
-#### Boost
-Dystruct depends on [Boost](http://www.boost.org).
-Dystruct depends on several libraries in [Boost](http://www.boost.org). If Boost is not installed on your machine, you can download and install a local copy using the instructions here. Dystruct has been compiled and tested with Boost 1.62.0, however newer releases of Boost _should_ work as well. First, download a copy of the .tar.gz file to the dystruct directory from [https://sourceforge.net/projects/boost/files/boost/1.62.0/](https://sourceforge.net/projects/boost/files/boost/1.62.0/). Once the download has completed, move to this directory in the Terminal.
-
-```
-dystruct tyjo$ cd boost_1_62_0
-boost_1_62_0 tyjo$ 
-boost_1_62_0 tyjo$ ./bootstrap.sh --with-libraries=program_options --prefix=. --with-toolset=gcc
-boost_1_62_0 tyjo$ ./b2 install
-```
-
-**Mac users:** If you installed gcc per the above instructions, you will need to edit the project-config.jam file created by the bootstrap.sh script before you call ./b2 install. After running the bootstrap.sh script above, open the project-config.jam file. Replace the lines:
-
-```
- 10 if ! gcc in [ feature.values <toolset> ]
- 11 {
- 12     using gcc ;
- 13 }
-```
-
-with the lines
-
-```
-10 if ! gcc in [ feature.values <toolset> ]
-11 {
-12     using gcc : : g++-6 ; 
-13 }
 ```
 
 ### Compilation
@@ -54,15 +35,7 @@ This outputs the Dystruct binary to bin. Run using
 ```
 ./bin/dystruct
 ```
-
-
-If you get an error, you are either missing your Boost install from your LD\_LIBRARY\_PATH, or using a compiler that does not support OpenMP. If you installed Boost locally, you can update the environment variable:
-
-```
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/PATH/TO/BOOST/boost_1_62_0/stage
-```
-
-If your compiler does not support OpenMP, you will most likely see the error
+If your compiler does not support OpenMP, you will likely see the error
 
 ```
 clang: error: unsupported option '-fopenmp'
@@ -70,12 +43,6 @@ clang: error: unsupported option '-fopenmp'
 
 You can either remove this flag from the makefile, which disables parallel computation, or install a different compiler per the above directions.
 
-If Dystruct has been successfully compiled, calling
-
-```
-./bin/dystruct
-```
-should output the list of Dystruct's command line arguments.
 
 ## Running Dystruct
 
@@ -94,41 +61,33 @@ before running.
 Dystruct takes several command line arguments:
 
 ```
-Dystruct Program Usage:
-  --help                        Print help message
-  --input arg                   Genotype file path. An LOCI x INDIVIDUAL matrix
-                                of genotypes; the header is the sample time in 
-                                generations. Samples must be ordered in 
-                                increasing generation time.
-  --output arg                  A file prefix for output files.
-  --npops arg                   Number of populations.
-  --nloci arg                   Number of loci. This should match the number of
-                                loci in the input file.
-  --pop_size arg                Specifies population size for all populations.
-  --seed arg                    Random seed used to initialize variational 
-                                parameters
-  --hold_out_fraction arg (=0)  Optional. Partitions nloci * hold_out_fraction 
-                                loci into a hold out set. The hold out set 
-                                contains at most one site per individual.
-  --hold_out_seed arg (=28149)  Optional. Random seed used to partition SNP 
-                                data into hold out and training sets. Use the 
-                                same seed across replicates to fix the hold out
-                                set.
-  --step_size_power arg (=-0.6) Optional. Adjusts step size for stochastic 
-                                variational inference. step_size = (iteration -
-                                offset)^step_power after the first 10000 
-                                iterations. The offset ensures the step size 
-                                does jump between iteration 10000 and 10001. 
-                                Must be in [-1,-0.5).
-  --labels arg                  Optional. Experimental. Population label file 
-                                path. Population labels for supervised 
-                                analysis. Labels should be in {0,...,npops - 
-                                1}. One label per line in the same order as the
-                                input matrix. Individuals without a population 
-                                assignment should be labeled by -1.
+Usage:   dystruct [options]
+
+Options:
+	--input FILE                Genotype file path. An LOCI x INDIVIDUAL matrix of genotypes. The header
+                                is the sample time in generations. Samples must be ordered in increasing
+                                generation time.
+	--output STR                A file prefix for output files.
+	--npops INT                 Number of populations.
+	--loci INT                  Number of loci. This should match the number of loci in the input file.
+	--pop-size INT              Effective population size for all populations.
+	--seed INT                  Random seed used to initialize variational parameters
+	--hold-out-fraction DOUBLE  (=0) Optional. Partitions nloci * hold_out_fraction loci into a hold out
+                                set. The hold out set contains at most one site per individual.
+	--hold-out-seed INT         (=28149) Optional. Random seed used to partition SNP data into hold out
+                                and training sets. Use the same seed across replicates to fix the hold
+                                out set.
+	--step-size-power DOUBLE    (=-0.6) Optional. Adjusts step size for stochastic variational inference.
+                                step_size = (iteration - offset)^step_power after the first 10000
+                                iterations. The offset ensures the step size does jump between iteration
+                                10000 and 10001. Must be in [-1,-0.5).
+	--labels FILE               Optional. Experimental. Population label file path for supervised analysis.
+                                Labels should be in {0,...,npops - 1}. One label per line in the same order
+                                as the input matrix. Individuals without a population assignment should be
+                                labeled by -1.
 ```
 
-For convenience, a shell script that runs Dystruct on a test data set and sets the appropriate environment variables is provided. A common complication is that your Boost installation is not in your LD\_LIBRARY\_PATH. If you get an error, you will need to set the appropriate LD\_LIBRARY\_PATH in this file.
+For convenience, a shell script that runs Dystruct on a test data set and sets the appropriate environment variables is provided (run.sh).
 
 #### Input Files
 Dystruct takes as input a whitespace delimited file of genotypes. Each column is a vector of genotypes (0, 1, or 2) for a single sampled individual, where the header is the time (in generations) when the individual was sampled relative to the first sample. Sites are assumed to be biallelic, where a 0 denotes that an individual a homozygote with respect to one of the alleles, a 1 denotes that an individual is a heterozygote, and a 2 denotes that an individual is homozygous for the alternate allele. Missing sites should be labled by 9. **The columns and are assumed to be in ascending order of sample time.** Each row is a locus. Below is an example for 2 sampled loci from 3 individuals at time 0 and 1.
