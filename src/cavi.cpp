@@ -121,7 +121,7 @@ void Cavi::initialize_variational_parameters()
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
             gamma_distribution<double> gamma(0.65*(double)nloci_indv[t][d]/100, 100);
             for (size_t k = 0; k < npops; ++k) {
-                if (using_labels && labels[t][d] != -1 && labels[t][d] != k) {
+                if (using_labels && labels[t][d] != -1 && labels[t][d] != (int)k) {
                     theta[t][d][k] = 1;
                 }
                 else {
@@ -233,11 +233,11 @@ void Cavi::update_auxiliary_local(size_t t, size_t d, size_t l)
 
     // computes log of auxiliary parameters (log-sum-exp trick for underflow)
     for (size_t k = 0; k < npops; ++k) {
-        if (using_labels && labels[t][d] != -1 && labels[t][d] != k) {
+        if (using_labels && labels[t][d] != -1 && labels[t][d] != (int)k) {
             phi[t][d][k] = log(1E-4);
             zeta[t][d][k] = log(1E-4);
         }
-        else if (using_labels && labels[t][d] == k) {
+        else if (using_labels && labels[t][d] == (int)k) {
             phi[t][d][k] = log(1 - (npops - 1)*1E-4);
             zeta[t][d][k] = log(1 - (npops - 1)*1E-4);
         }
@@ -331,11 +331,11 @@ void Cavi::update_mixture_proportions(int locus)
 
 void Cavi::run_stochastic()
 {
-    int    locus     = 0;
-    int    it        = 0;
-    double ss        = 1;
-    bool   converged = false;
-    double offset    = 10000 - pow(0.01, 1. / step_power);
+    int          locus = 0;
+    unsigned int it    = 0;
+    double ss          = 1;
+    bool   converged   = false;
+    double offset      = 10000 - pow(0.01, 1. / step_power);
 
     // monitor convergence
     vector3<double> prev_theta = theta;
