@@ -13,28 +13,13 @@ make
 ./run.sh
 ```
 
-### Dependencies
-
-#### OpenMP
+### OpenMP
 Dystruct depends on the OpenMP API for parallel computation. Unfortunately, OpenMP is not supported on the clang compiler shipped with macOS. Mac users will need to compile Dystruct using a different C++ compiler. To install gcc using homebrew, simply call
 
 ```
 brew install gcc6
 ```
 
-### Compilation
-
-Once the dependencies are satisfied, you can compile with
-
-```
-make
-```
-
-This outputs the Dystruct binary to bin. Run using
-
-```
-./bin/dystruct
-```
 If your compiler does not support OpenMP, you will likely see the error
 
 ```
