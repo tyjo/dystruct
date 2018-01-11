@@ -61,6 +61,7 @@ Cavi::Cavi(int                     npops,
            boost::random::mt19937& gen,
            size_t                  nloci,
            double                  step_power,
+           double                  tol,
            vector2<int>            labels,
            bool                    using_labels) :
            npops(npops),
@@ -74,6 +75,7 @@ Cavi::Cavi(int                     npops,
            theta(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()][npops]),
            nloci_indv(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
            sample_iter(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
+           tol(tol),
            step_power(step_power),
            labels(labels)
 {   
@@ -385,7 +387,7 @@ pair<bool, double> Cavi::check_theta_convergence(const vector3<double>& prev_the
         }
     }
     delta /= count;
-    return pair<bool, double>(delta < 1, delta);
+    return pair<bool, double>(delta < tol, delta);
 }
 
 

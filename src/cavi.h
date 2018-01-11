@@ -20,6 +20,7 @@ class Cavi
          SNPData                 snp_data,
          boost::random::mt19937& gen,
          size_t                  nloci,
+         double                  tol,
          double                  step_power,
          vector2<int>            labels,
          bool                    using_labels = false);
@@ -58,6 +59,7 @@ class Cavi
     vector2<int>                        nloci_indv;
     vector2<int>                        labels;
     vector2<int>                        sample_iter;    // store the number of iterations for each sample. use for step size
+    double                              tol;            // convergence threshold
     double                              step_power;     // determines step size per iteration. after first 10000 iterations, step size becomes (iteration - offset)^step_power
     bool                                using_labels = false;
     

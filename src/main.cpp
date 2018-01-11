@@ -56,6 +56,7 @@ enum OPTIONS
     SEED,
     HOLD_OUT_FRACTION,
     HOLD_OUT_SEED,
+    TOL,
     STEP_SIZE_POWER,
     LABELS
 };
@@ -70,6 +71,7 @@ static struct option long_options[] =
     {"seed"              , required_argument, NULL, SEED              },
     {"hold-out-fraction" , required_argument, NULL, HOLD_OUT_FRACTION },
     {"hold-out-seed"     , required_argument, NULL, HOLD_OUT_SEED     },
+    {"tol"               , required_argument, NULL, TOL               },
     {"step-size-power"   , required_argument, NULL, STEP_SIZE_POWER   },
     {"labels"            , required_argument, NULL, LABELS            },
     {NULL, no_argument, NULL, 0}
@@ -94,6 +96,7 @@ int main(int argc, char* const argv[])
     int nloci                = 0;
     double hold_out_fraction = 0;
     double pop_size          = 0;
+    double tol               = 1;
     double step_power        = -0.6;
     string label_file        = "";
 
@@ -125,6 +128,9 @@ int main(int argc, char* const argv[])
             case HOLD_OUT_SEED:
                 hold_out_seed = atoi(optarg);
                 break;
+            case TOL:
+                tol = atof(optarg);
+                break;
             case STEP_SIZE_POWER:
                 step_power = atof(optarg);
                 break;
@@ -132,6 +138,10 @@ int main(int argc, char* const argv[])
                 label_file = optarg;
                 break;
             default:
+                cerr << "unrecognized argument";
+                if (option_index > 0)
+                    cerr << ": " << argv[option_index - 1];
+                cerr << endl;
                 return 1;
                 break;
         }
@@ -162,6 +172,10 @@ int main(int argc, char* const argv[])
         cerr << "proportion of held out sites must be between in [0, 1)" << endl;
         return 1;
     }
+    else if (tol < 0) {
+        cerr << "--tol must be positive" << endl;
+        return 1;
+    }
     else if (step_power < -1 || step_power >= -0.5) {
         cerr << "power for step size must be in the interval [-1, -0.5)" << endl;
         return 1;
@@ -185,7 +199,7 @@ int main(int argc, char* const argv[])
     }
 
     cout << "initializing variational parameters..." << endl;
-    Cavi cavi(npop, theta_prior, pop_size, snp_data, gen, nloci, step_power, labels);
+    Cavi cavi(npop, theta_prior, pop_size, snp_data, gen, nloci, tol, step_power, labels);
 
     cout << "running..." << endl;
     cavi.run_stochastic();
@@ -282,7 +296,7 @@ void print_help()
     cerr << endl;
     cerr << "Usage:   dystruct [options]" << endl;
     cerr << endl;
-    cerr << "Options:" << endl;
+    cerr << "Required Arguments:" << endl;
     cerr << "\t--input FILE                " << "Genotype file path. An LOCI x INDIVIDUAL matrix of genotypes. The header" << endl
          << "                                    is the sample time in generations. Samples must be ordered in increasing" << endl
          << "                                    generation time." << endl;
@@ -291,11 +305,15 @@ void print_help()
     cerr << "\t--loci INT                  " << "Number of loci. This should match the number of loci in the input file." << endl;
     cerr << "\t--pop-size INT              " << "Effective population size for all populations." << endl;
     cerr << "\t--seed INT                  " << "Random seed used to initialize variational parameters" << endl;
+    cerr << endl;
+    cerr << "Optional Arguments:" << endl;
     cerr << "\t--hold-out-fraction DOUBLE  " << "(=0) Optional. Partitions nloci * hold_out_fraction loci into a hold out" << endl
          << "                                    set. The hold out set contains at most one site per individual." << endl;
     cerr << "\t--hold-out-seed INT         " << "(=28149) Optional. Random seed used to partition SNP data into hold out" << endl
          << "                                    and training sets. Use the same seed across replicates to fix the hold" << endl
          << "                                    out set." << endl;
+    cerr << "\t--tol DOUBLE                " << "(=1) Optional. Convergence threshold in number of loci. Programs terminates" << endl
+         << "                                    when delta < tol." << endl;
     cerr << "\t--step-size-power DOUBLE    " << "(=-0.6) Optional. Adjusts step size for stochastic variational inference." << endl
          << "                                    step_size = (iteration - offset)^step_power after the first 10000" << endl
          << "                                    iterations. The offset ensures the step size does jump between iteration" << endl
