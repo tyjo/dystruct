@@ -138,10 +138,7 @@ int main(int argc, char* const argv[])
                 label_file = optarg;
                 break;
             default:
-                cerr << "unrecognized argument";
-                if (option_index > 0)
-                    cerr << ": " << argv[option_index - 1];
-                cerr << endl;
+                // getopt prints an error
                 return 1;
                 break;
         }
