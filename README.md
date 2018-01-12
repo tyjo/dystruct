@@ -48,28 +48,32 @@ Dystruct takes several command line arguments:
 ```
 Usage:   dystruct [options]
 
-Options:
+Required Arguments:
 	--input FILE                Genotype file path. An LOCI x INDIVIDUAL matrix of genotypes. The header
-                                is the sample time in generations. Samples must be ordered in increasing
-                                generation time.
+                                    is the sample time in generations. Samples must be ordered in increasing
+                                    generation time.
 	--output STR                A file prefix for output files.
 	--npops INT                 Number of populations.
 	--loci INT                  Number of loci. This should match the number of loci in the input file.
 	--pop-size INT              Effective population size for all populations.
 	--seed INT                  Random seed used to initialize variational parameters
+
+Optional Arguments:
 	--hold-out-fraction DOUBLE  (=0) Optional. Partitions nloci * hold_out_fraction loci into a hold out
-                                set. The hold out set contains at most one site per individual.
+                                    set. The hold out set contains at most one site per individual.
 	--hold-out-seed INT         (=28149) Optional. Random seed used to partition SNP data into hold out
-                                and training sets. Use the same seed across replicates to fix the hold
-                                out set.
+                                    and training sets. Use the same seed across replicates to fix the hold
+                                    out set.
+	--tol DOUBLE                (=1) Optional. Convergence threshold in number of loci. Programs terminates
+                                    when delta < tol.
 	--step-size-power DOUBLE    (=-0.6) Optional. Adjusts step size for stochastic variational inference.
-                                step_size = (iteration - offset)^step_power after the first 10000
-                                iterations. The offset ensures the step size does jump between iteration
-                                10000 and 10001. Must be in [-1,-0.5).
+                                    step_size = (iteration - offset)^step_power after the first 10000
+                                    iterations. The offset ensures the step size does jump between iteration
+                                    10000 and 10001. Must be in [-1,-0.5).
 	--labels FILE               Optional. Experimental. Population label file path for supervised analysis.
-                                Labels should be in {0,...,npops - 1}. One label per line in the same order
-                                as the input matrix. Individuals without a population assignment should be
-                                labeled by -1.
+                                    Labels should be in {0,...,npops - 1}. One label per line in the same order
+                                    as the input matrix. Individuals without a population assignment should be
+                                    labeled by -1.
 ```
 
 For convenience, a shell script that runs Dystruct on a test data set and sets the appropriate environment variables is provided (run.sh).
