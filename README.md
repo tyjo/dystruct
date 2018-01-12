@@ -105,16 +105,6 @@ Dystruct takes an option argument to hold out a subset of loci. After convergenc
 
 Nonetheless, in our experience choosing *K* is of minor importance. Instead, like related ancestry inference programs, Dystruct should be run over a range of *K* and each *K* analyzed separately. Each *K* can give insight to a different relationship between ancient and modern samples.
 
-
-#### Step Size and Monitoring Convergence
-Dystruct provides a parameter, step\_size\_power, for adjusting the per iteration change in step size required by stochastic variational inference. In stochastic variational inference, the step size is give by (iteration #)^step\_size\_power. Provided step\_size\_power meets certain criteria, convergence is guaranteed. Emperically, we found our method works best with a large step size during early iterations, followed by a more rapidly decreasing step size in subsequent iterations. Thus, the first 10000 iterations have a fixed step size. The step\_size\_power parameter is used to compute the step size for iterations 10001+, along with an adjustment to ensure a smooth transition in step size between iteration 10000 and 100001.
-
-Step size is important for Dystruct to converge in a reasonable amount of time. Too large a step size, and Dystruct's parameters circle around the maximum; too small and Dystruct terminates before the parameters converge. We currently recommend leaving step\_size\_power to the default for small datasets (~10000 loci), and increasing the magnitude of the step size to between -0.75 to -0.65 if the number of loci increases by an order of magnitude (~100000 loci).
-
-Dystruct displays progress every 1000 iterations by printing a global step size, and the average change in number of loci assigned to a population for each individual (delta). Once the average loci assigned is less than 1 the algorithm terminates, as this is now beyond the precision available for point estimates.
-
-Dystruct additionally outputs current ancestry estimates in the file temp\_theta. These can and should be investigated to determine if parameter estimates have converged. Dystruct's convergence criteria is fairly strict.
-
 #### Labeled Data
 Dystruct takes an optional argument with population assignment for ancient samples. These are treated as known and fixed. Ancestry is inferred for the remaining unlabeled samples. This feature is currently experimental, and has yet to be thoroughly investigated using simulations.
 
