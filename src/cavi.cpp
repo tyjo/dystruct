@@ -304,17 +304,13 @@ void Cavi::update_mixture_proportions(int locus)
 {
     int l = locus;
     double step_size;
-    double offset    = 10000 - pow(0.01, 1. / step_power);
     for (size_t t = 0; t < nsteps; ++ t) {
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
             for (size_t k = 0; k < npops; ++k) {
                 double update = 0;
                 if (snp_data.hidden(t, d, l)) continue;
 
-                if (sample_iter[t][d] <= 10000)
-                    step_size = pow(sample_iter[t][d] + 1, -0.5);
-                else
-                    step_size = pow(sample_iter[t][d] - offset, step_power);
+                step_size = pow(sample_iter[t][d] + 1, step_power);
                 
                 update += snp_data.genotype(t, d, l)*phi[t][d][k] 
                                 + (2 - snp_data.genotype(t, d, l))*zeta[t][d][k];
@@ -337,7 +333,6 @@ void Cavi::run_stochastic()
     unsigned int it    = 0;
     double ss          = 1;
     bool   converged   = false;
-    double offset      = 10000 - pow(0.01, 1. / step_power);
 
     // monitor convergence
     vector3<double> prev_theta = theta;
@@ -347,10 +342,7 @@ void Cavi::run_stochastic()
     while (it < nloci || !theta_converged.first) {
         it++;
         locus = idist(gen);
-
-        // monitor step size if no missing data
-        if (it <= 10000) ss = pow(it + 1, -0.5);
-        else ss = pow(it - offset, step_power);
+        ss = pow(it + 1, step_power);
 
         converged = false;
         while (!converged) {

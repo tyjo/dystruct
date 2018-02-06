@@ -312,9 +312,7 @@ void print_help()
     cerr << "\t--tol DOUBLE                " << "(=1) Optional. Convergence threshold in number of loci. Programs terminates" << endl
          << "                                    when delta < tol." << endl;
     cerr << "\t--step-size-power DOUBLE    " << "(=-0.6) Optional. Adjusts step size for stochastic variational inference." << endl
-         << "                                    step_size = (iteration - offset)^step_power after the first 10000" << endl
-         << "                                    iterations. The offset ensures the step size does jump between iteration" << endl
-         << "                                    10000 and 10001. Must be in [-1,-0.5)." << endl;
+         << "                                    step_size = (iteration + 1)^step-size-power. Must be in [-1,-0.5)." << endl;
     cerr << "\t--labels FILE               " << "Optional. Experimental. Population label file path for supervised analysis." << endl 
          << "                                    Labels should be in {0,...,npops - 1}. One label per line in the same order" << endl
          << "                                    as the input matrix. Individuals without a population assignment should be" << endl
