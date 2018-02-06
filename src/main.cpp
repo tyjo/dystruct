@@ -1,3 +1,22 @@
+/*
+Copyright (C) 2017-2018 Tyler Joseph <tjoseph@cs.columbia.edu>
+
+This file is part of Dystruct.
+
+Dystruct is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Dystruct is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <algorithm>
@@ -289,6 +308,7 @@ vector2<int> read_pop_labels(string fname, SNPData& snp_data)
 void print_help()
 {
     cerr << "Program: dystruct (Dynamic Structure)" << endl;
+    cerr << "Version: v.0.2.0" << endl;
     cerr << "Contact: Tyler Joseph <tjoseph@cs.columbia.edu>" << endl;
     cerr << endl;
     cerr << "Usage:   dystruct [options]" << endl;
