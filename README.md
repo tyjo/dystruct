@@ -59,18 +59,16 @@ Required Arguments:
 	--seed INT                  Random seed used to initialize variational parameters
 
 Optional Arguments:
-	--hold-out-fraction DOUBLE  (=0) Optional. Partitions nloci * hold_out_fraction loci into a hold out
+      --hold-out-fraction DOUBLE  (=0) Optional. Partitions nloci * hold_out_fraction loci into a hold out
                                     set. The hold out set contains at most one site per individual.
-	--hold-out-seed INT         (=28149) Optional. Random seed used to partition SNP data into hold out
+      --hold-out-seed INT         (=28149) Optional. Random seed used to partition SNP data into hold out
                                     and training sets. Use the same seed across replicates to fix the hold
                                     out set.
-	--tol DOUBLE                (=1) Optional. Convergence threshold in number of loci. Programs terminates
+      --tol DOUBLE                (=1) Optional. Convergence threshold in number of loci. Programs terminates
                                     when delta < tol.
-	--step-size-power DOUBLE    (=-0.6) Optional. Adjusts step size for stochastic variational inference.
-                                    step_size = (iteration - offset)^step_power after the first 10000
-                                    iterations. The offset ensures the step size does jump between iteration
-                                    10000 and 10001. Must be in [-1,-0.5).
-	--labels FILE               Optional. Experimental. Population label file path for supervised analysis.
+      --step-size-power DOUBLE    (=-0.6) Optional. Adjusts step size for stochastic variational inference.
+                                    step_size = (iteration + 1)^step-size-power. Must be in [-1,-0.5).
+      --labels FILE               Optional. Experimental. Population label file path for supervised analysis.
                                     Labels should be in {0,...,npops - 1}. One label per line in the same order
                                     as the input matrix. Individuals without a population assignment should be
                                     labeled by -1.
