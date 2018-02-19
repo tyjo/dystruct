@@ -308,7 +308,7 @@ vector2<int> read_pop_labels(string fname, SNPData& snp_data)
 void print_help()
 {
     cerr << "Program: dystruct (Dynamic Structure)" << endl;
-    cerr << "Version: v.0.2.0" << endl;
+    cerr << "Version: v.0.3.0" << endl;
     cerr << "Contact: Tyler Joseph <tjoseph@cs.columbia.edu>" << endl;
     cerr << endl;
     cerr << "Usage:   dystruct [options]" << endl;
