@@ -60,6 +60,7 @@ using std::string;
 using std::unique_copy;
 using std::vector;
 
+string VERSION = "v0.2.1";
 
 void read_snp_matrix(string fname, std_vector3<short> *snps, vector<int>& gen_sampled, int nloci);
 vector2<int> read_pop_labels(string fname, SNPData& snp_data);
@@ -192,7 +193,7 @@ int main(int argc, char* const argv[])
         cerr << "--tol must be positive" << endl;
         return 1;
     }
-    else if (step_power < -1 || step_power >= -0.5) {
+    else if (step_power <= -1 || step_power > -0.5) {
         cerr << "power for step size must be in the interval [-1, -0.5)" << endl;
         return 1;
     }
@@ -206,8 +207,11 @@ int main(int argc, char* const argv[])
     read_snp_matrix(in_file, snps, gen_sampled, nloci);
     SNPData snp_data(snps, gen_sampled, hold_out_fraction, hold_out_seed);
     vector2<int> labels(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]);
-    if (label_file != "")
+    bool use_labels = false;
+    if (label_file != "") {
         labels = read_pop_labels(label_file, snp_data);
+        use_labels = true;
+    }
     
     vector<double> theta_prior;
     for (int k = 0; k < npop; ++k) {
@@ -215,7 +219,7 @@ int main(int argc, char* const argv[])
     }
 
     cout << "initializing variational parameters..." << endl;
-    Cavi cavi(npop, theta_prior, pop_size, snp_data, gen, nloci, tol, step_power, labels);
+    Cavi cavi(npop, theta_prior, pop_size, snp_data, gen, nloci, tol, step_power, labels, use_labels);
 
     cout << "running..." << endl;
     cavi.run_stochastic();
@@ -308,7 +312,7 @@ vector2<int> read_pop_labels(string fname, SNPData& snp_data)
 void print_help()
 {
     cerr << "Program: dystruct (Dynamic Structure)" << endl;
-    cerr << "Version: v.0.2.0" << endl;
+    cerr << "Version: " << VERSION << endl;
     cerr << "Contact: Tyler Joseph <tjoseph@cs.columbia.edu>" << endl;
     cerr << endl;
     cerr << "Usage:   dystruct [options]" << endl;

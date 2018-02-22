@@ -255,8 +255,8 @@ void Cavi::update_auxiliary_local(size_t t, size_t d, size_t l)
     // computes log of auxiliary parameters (log-sum-exp trick for underflow)
     for (size_t k = 0; k < npops; ++k) {
         if (using_labels && labels[t][d] != -1 && labels[t][d] != (int)k) {
-            phi[t][d][k] = log(1E-4);
-            zeta[t][d][k] = log(1E-4);
+            phi[t][d][k] = log(1E-8);
+            zeta[t][d][k] = log(1E-8);
         }
         else if (using_labels && labels[t][d] == (int)k) {
             phi[t][d][k] = log(1 - (npops - 1)*1E-4);
@@ -391,6 +391,8 @@ pair<bool, double> Cavi::check_theta_convergence(const vector3<double>& prev_the
     double count = 0;
     for (size_t t = 0; t < nsteps; ++t) {
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
+            if (using_labels && labels[t][d] != -1) continue;
+            
             for (size_t k = 0; k < npops; ++k) {
                 delta += abs(prev_theta[t][d][k] - theta[t][d][k]);
                 count += 1;
