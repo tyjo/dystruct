@@ -60,7 +60,7 @@ using std::string;
 using std::unique_copy;
 using std::vector;
 
-string VERSION = "v0.2.1";
+string VERSION = "v0.2.2";
 
 void read_snp_matrix(string fname, std_vector3<short> *snps, vector<int>& gen_sampled, int nloci);
 vector2<int> read_pop_labels(string fname, SNPData& snp_data);

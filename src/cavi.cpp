@@ -210,7 +210,7 @@ bool Cavi::update_auxiliary_parameters(int sample)
         
         // better to parallelize inner loop since sample
         // tend to be sparse in t but dense in d
-        #pragma omp parallel for
+        #pragma omp parallel for reduction(&&:converged)
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
             if (snp_data.hidden(t,d,sample)) continue;
             vector<double> prev_phi(npops);
@@ -223,7 +223,6 @@ bool Cavi::update_auxiliary_parameters(int sample)
             update_auxiliary_local(t,d,sample);
             
             for (size_t k = 0; k < npops; ++k) {
-                #pragma omp atomic write
                 converged = (abs(prev_zeta[k] - zeta[t][d][k]) < 0.01) && (abs(prev_phi[k] - phi[t][d][k]) < 0.01) && converged;
             }
         }
