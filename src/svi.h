@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CAVI_H
-#define CAVI_H
+#ifndef SVI_H
+#define SVI_H
 
 #include <boost/random/mersenne_twister.hpp>
 #include <iostream>
@@ -29,20 +29,20 @@ along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 #include "snp_data.h"
 #include "vector_types.h"
 
-// Coordinate Ascent Variational Inference
-class Cavi
+// Stochastic variational inference
+class SVI
 {
   public:
-    Cavi(int                     npops,
-         std::vector<double>     mixture_prior,
-         double                  pop_size,        // fixed population size
-         SNPData                 snp_data,
-         boost::random::mt19937& gen,
-         size_t                  nloci,
-         double                  tol,
-         double                  step_power,
-         vector2<int>            labels,
-         bool                    using_labels = false);
+    SVI(int                     npops,
+        std::vector<double>     mixture_prior,
+        double                  pop_size,        // fixed population size
+        SNPData                 snp_data,
+        boost::random::mt19937& gen,
+        size_t                  nloci,
+        double                  tol,
+        double                  step_power,
+        vector2<int>            labels,
+        bool                    using_labels = false);
 
     // Stochastic variational inference
     inline bool update_auxiliary_parameters(int locus);

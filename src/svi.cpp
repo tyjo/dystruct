@@ -38,7 +38,7 @@ along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 #include <iomanip>
 #include <utility>
 
-#include "cavi.h"
+#include "svi.h"
 #include "dirichlet_distribution.h"
 #include "snp_data.h"
 #include "variational_kalman_smoother.h"
@@ -74,7 +74,7 @@ using std::string;
 using std::vector;
 
 
-Cavi::Cavi(int                     npops,
+SVI::SVI(int                     npops,
            std::vector<double>     mixture_prior,
            double                  pop_size,
            SNPData                 snp_data,
@@ -111,7 +111,7 @@ Cavi::Cavi(int                     npops,
 
 
 
-void Cavi::initialize_variational_parameters()
+void SVI::initialize_variational_parameters()
 {
     for (size_t t = 0; t < nsteps; ++t) {
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
@@ -169,7 +169,7 @@ void Cavi::initialize_variational_parameters()
 
 
 
-double Cavi::compute_ho_log_likelihood()
+double SVI::compute_ho_log_likelihood()
 {
     double log_lk = 0;
     double p = 0;
@@ -204,7 +204,7 @@ double Cavi::compute_ho_log_likelihood()
 
 
 
-bool Cavi::update_auxiliary_parameters(int sample)
+bool SVI::update_auxiliary_parameters(int sample)
 {
     bool converged = true;
     for (size_t t = 0; t < nsteps; ++t) {
@@ -233,7 +233,7 @@ bool Cavi::update_auxiliary_parameters(int sample)
 
 
 
-void Cavi::load_auxiliary_parameters(int sample)
+void SVI::load_auxiliary_parameters(int sample)
 {
     for (size_t t = 0; t < nsteps; ++t) {
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
@@ -245,7 +245,7 @@ void Cavi::load_auxiliary_parameters(int sample)
 
 
 
-void Cavi::update_auxiliary_local(size_t t, size_t d, size_t l)
+void SVI::update_auxiliary_local(size_t t, size_t d, size_t l)
 {
     double dgma = 0.0;
     double max_phi = phi[t][d][0];
@@ -298,7 +298,7 @@ void Cavi::update_auxiliary_local(size_t t, size_t d, size_t l)
 
 
 
-void Cavi::update_allele_frequencies(int locus)
+void SVI::update_allele_frequencies(int locus)
 {
     vector<VariationalKalmanSmoother> vks;
     for (size_t k = 0; k < npops; ++k) {
@@ -319,7 +319,7 @@ void Cavi::update_allele_frequencies(int locus)
 
 
 
-void Cavi::update_mixture_proportions(int locus)
+void SVI::update_mixture_proportions(int locus)
 {
     int l = locus;
     double step_size;
@@ -346,7 +346,7 @@ void Cavi::update_mixture_proportions(int locus)
 }
 
 
-void Cavi::run_stochastic()
+void SVI::run_stochastic()
 {
     int          locus = 0;
     unsigned int it    = 0;
@@ -385,7 +385,7 @@ void Cavi::run_stochastic()
 
 
 
-pair<bool, double> Cavi::check_theta_convergence(const vector3<double>& prev_theta)
+pair<bool, double> SVI::check_theta_convergence(const vector3<double>& prev_theta)
 {
     double delta = 0;
     double count = 0;
@@ -405,7 +405,7 @@ pair<bool, double> Cavi::check_theta_convergence(const vector3<double>& prev_the
 
 
 
-void Cavi::write_results(string out_file)
+void SVI::write_results(string out_file)
 {
     ofstream out_freq(out_file + "_freqs");
     for (size_t t = 0; t < nsteps; ++t) {
@@ -437,7 +437,7 @@ void Cavi::write_results(string out_file)
 
 
 
-void Cavi::write_temp()
+void SVI::write_temp()
 {
     ofstream out_theta("temp_theta");
     for (size_t t = 0; t < nsteps; ++t) {
