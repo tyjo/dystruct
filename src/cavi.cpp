@@ -47,6 +47,7 @@ along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 using std::ifstream;
 using std::istringstream;
+using std::setw;
 using std::skipws;
 
 using boost::math::digamma;
@@ -372,8 +373,8 @@ void Cavi::run_stochastic()
         if (it % 1000 == 0 || it == 1) {
             theta_converged = check_theta_convergence(prev_theta);
             prev_theta = theta;
-            cout << "it:\t" << it;
-            cout << "\tstep size:\t" << ss;
+            cout << "it:\t" << it << setw(10);
+            cout << "\tstep size:\t" << ss << setw(10);
             cout << "\tdelta:\t" << theta_converged.second << endl;
             write_temp();
         }
@@ -449,5 +450,3 @@ void Cavi::write_temp()
     }
     out_theta.close();
 }
-
-
