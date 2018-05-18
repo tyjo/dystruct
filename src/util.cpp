@@ -92,7 +92,6 @@ vector<int> read_generations(string fname, vector<int>& gen_sampled)
 
 void check_input_file(string fname, int nloci)
 {   
-    cout << "checking input file..." << endl;
     ifstream input(fname);
     if (!input.is_open()) {
         cerr << "cannot open " << fname << endl;
@@ -145,11 +144,12 @@ void check_input_file(string fname, int nloci)
 void read_snp_matrix(string fname, std_vector3<short> *snps, vector<int>& gen_sampled, int nloci)
 {
     cout << "loading genotype matrix (this should not take more than a few minutes)..." << endl;
+    cout << "\tchecking input file..." << endl;
     check_input_file(fname, nloci);
     vector<int> generations = read_generations(fname, gen_sampled);
 
-    cout << "found " << generations.size() << " samples at " << gen_sampled.size() << " time points..." << endl;
-    cout << "using " << nloci << " loci..." << endl; 
+    cout << "\tfound " << generations.size() << " samples at " << gen_sampled.size() << " time points..." << endl;
+    cout << "\tusing " << nloci << " loci..." << endl; 
 
     ifstream input(fname);
     if (!input.is_open()) {
