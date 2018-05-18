@@ -121,9 +121,9 @@ void check_input_file(string fname, int nloci)
             col_count++;
 
             if (!(g == 0 || g == 1 || g == 2 || g == 9)) {
-                cerr << "Input Error(" << fname << "): line " << locus_count << " column "
+                cerr << "Input Error (" << fname << "): line " << locus_count << " column "
                      << col_count + 1 << " has an invalid entry." << endl;
-                cerr << "Genotypes must be 0, 1, or 2 if known, 9 is missing or unknown." << endl;
+                cerr << "Genotypes must be 0, 1, or 2 if known, 9 if missing or unknown." << endl;
                 exit(1);
             }
         }
