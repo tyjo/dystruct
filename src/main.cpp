@@ -58,7 +58,7 @@ void print_help()
          << "                                    generation time. With genotypes encoder by 0, 1, 2, or 9 for missing data." << endl;
     cerr << "\t--output STR                " << "A file prefix for output files." << endl;
     cerr << "\t--npops INT                 " << "Number of populations." << endl;
-    cerr << "\t--loci INT                  " << "Number of loci. This should match the number of loci in the input file." << endl;
+    cerr << "\t--nloci INT                 " << "Number of loci. This should match the number of loci in the input file." << endl;
     cerr << "\t--pop-size INT              " << "Effective population size for all populations." << endl;
     cerr << "\t--seed INT                  " << "Random seed used to initialize variational parameters" << endl;
     cerr << endl;
