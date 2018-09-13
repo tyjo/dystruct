@@ -49,6 +49,7 @@ using std::set;
 using std::setprecision;
 using std::setw;
 using std::skipws;
+using std::sort;
 using std::string;
 using std::unique_copy;
 using std::vector;
@@ -67,22 +68,28 @@ vector<int> read_generations(string fname, vector<int>& gen_sampled)
     }
 
     string line;
-    getline(input, line);
     vector<int> generations;
+    int c;
     int g;
     istringstream iss(line);
-    while (iss >> skipws >> g) {
-        generations.push_back(g);
-    }
-
-    if (!is_sorted(generations.begin(), generations.end())) {
-        cerr << "Input Error (" << fname << "): samples are not ordered by generation time" << endl;
-        exit(1);
+    while (getline(input, line)) {
+        iss = istringstream(line);
+        c = 0;
+        while (iss >> skipws >> g) {
+            c++;
+            generations.push_back(g);
+            if (c > 1) {
+                cerr << "Input Error (" << fname << "): more than one generation time per line" << endl;
+                exit(1);
+            }
+        }
     }
 
     // remove duplicate sample times so we can aggregate samples by generation sampled
+    vector<int> generations_sorted(generations);
+    sort(generations_sorted.begin(), generations_sorted.end());
     insert_iterator<vector<int> > insert_it(gen_sampled, gen_sampled.begin());
-    unique_copy(generations.begin(), generations.end(), insert_it);
+    unique_copy(generations_sorted.begin(), generations_sorted.end(), insert_it);
 
     input.close();
 
@@ -90,7 +97,7 @@ vector<int> read_generations(string fname, vector<int>& gen_sampled)
 }
 
 
-void check_input_file(string fname, int nloci)
+int check_input_file(string fname, int nloci, int n_columns)
 {   
     ifstream input(fname);
     if (!input.is_open()) {
@@ -99,24 +106,18 @@ void check_input_file(string fname, int nloci)
     }
 
     string line;
-    int g;
-    int n_columns = 0;
-    getline(input, line);
-
-    // count the number of columns
     istringstream iss(line);
-    while (iss >> skipws >> g) {
-        n_columns++;
-    }
-
     int locus_count = 0;
     int col_count = 0;
-    while(getline(input, line)) {
+    int g = 0;
+    char c[] = "X";
+    while (getline(input, line)) {
         locus_count++;
         iss = istringstream(line);
         col_count = 0;
 
-        while(iss >> skipws >> g) {
+        while (iss >> c[0]) {
+            g = atoi(c);
             col_count++;
 
             if (!(g == 0 || g == 1 || g == 2 || g == 9)) {
@@ -138,18 +139,20 @@ void check_input_file(string fname, int nloci)
         cerr << "Input Warning (" << fname << "): " << nloci << " were specified, but "
              << locus_count << " were found." << endl;
     }
+
+    return locus_count;
 }
 
 
-void read_snp_matrix(string fname, std_vector3<short> *snps, vector<int>& gen_sampled, int nloci)
+map<int, pair<int, int> > read_snp_matrix(string fname, string gen_fname, std_vector3<short> *snps, vector<int>& gen_sampled, int nloci)
 {
     cout << "loading genotype matrix (this should not take more than a few minutes)..." << endl;
     cout << "\tchecking input file..." << endl;
-    check_input_file(fname, nloci);
-    vector<int> generations = read_generations(fname, gen_sampled);
+    vector<int> generations = read_generations(gen_fname, gen_sampled);
+    int found_loci = check_input_file(fname, nloci, generations.size());
 
     cout << "\tfound " << generations.size() << " samples at " << gen_sampled.size() << " time points..." << endl;
-    cout << "\tusing " << nloci << " loci..." << endl; 
+    cout << "\tusing " << found_loci << " loci..." << endl; 
 
     ifstream input(fname);
     if (!input.is_open()) {
@@ -158,25 +161,25 @@ void read_snp_matrix(string fname, std_vector3<short> *snps, vector<int>& gen_sa
     }
 
     string line;
-    getline(input, line); // first line is the header
-
     int ct;
     for (size_t t = 0; t < gen_sampled.size(); ++t) {
         ct = count(generations.begin(), generations.end(), gen_sampled[t]);
         (*snps).push_back(vector2<short>(boost::extents[ct][nloci]));
     }
 
-    short genotype;
+    short genotype = 0;
     int i;
     int l = 0;
     int gen;
     int index;
     istringstream iss(line);
+    char c[] = "X";
     while (getline(input, line)) {
         iss = istringstream(line);
         i = 0;
         map<int, int> gen_to_nsamples; // generation to number of samples
-        while (iss >> skipws >> genotype) {
+        while (iss >> c[0]) {
+            genotype = atoi(c);
             gen = generations[i];
             index = find(gen_sampled.begin(), gen_sampled.end(), gen) - gen_sampled.begin();
             (*snps)[index][gen_to_nsamples[gen]][l] = genotype;
@@ -188,6 +191,17 @@ void read_snp_matrix(string fname, std_vector3<short> *snps, vector<int>& gen_sa
             break;
     }
     input.close();
+
+    // need a map from original sample index to row index in genotype matrix
+    map<int, pair<int, int> > sample_map;
+    map<int, int> gen_to_nsamples;
+    for (size_t i = 0; i < generations.size(); ++i) {
+        gen = generations[i];
+        index = find(gen_sampled.begin(), gen_sampled.end(), gen) - gen_sampled.begin();
+        sample_map[(int)i] = pair<int, int>(index, gen_to_nsamples[gen]);
+        gen_to_nsamples[gen]++;
+    }
+    return sample_map;
 }
 
 

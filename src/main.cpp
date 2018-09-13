@@ -23,7 +23,9 @@ along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 #include <getopt.h>
 #include <iostream>
 #include <iomanip>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "svi.h"
@@ -37,11 +39,13 @@ using std::cerr;
 using std::cout;
 using std::exit;
 using std::endl;
+using std::map;
+using std::pair;
 using std::setprecision;
 using std::string;
 using std::vector;
 
-string VERSION = "v0.2.3";
+string VERSION = "v1.0.0";
 
 
 void print_help()
@@ -53,10 +57,15 @@ void print_help()
     cerr << "Usage:   dystruct [options]" << endl;
     cerr << endl;
     cerr << "Required Arguments:" << endl;
-    cerr << "\t--input FILE                " << "Genotype file path. An LOCI x INDIVIDUAL matrix of genotypes. The header" << endl
-         << "                                    is the sample time in generations. Samples must be ordered in increasing" << endl
-         << "                                    generation time. With genotypes encoder by 0, 1, 2, or 9 for missing data." << endl;
-    cerr << "\t--output STR                " << "A file prefix for output files." << endl;
+    cerr << "\t--input FILE                " << "Path to genotype matrix: a LOCI x INDIVIDUAL matrix of genotypes in the" << endl
+         << "                                    EIGENSTRAT genotype format. Each genotype is denoted by either 0, 1, 2, or 9," << endl
+         << "                                    where 9 identifies missing entries. There are no spaces between entries." << endl
+         << "                                    See https://github.com/DReichLab/EIG/tree/master/CONVERTF for more details" << endl
+         << "                                    and converting between standard formats." << endl;
+    cerr << "\t--generation-times FILE     " << "Path to generation times corresponding to the input file. A list of generation" << endl
+         << "                                    times (one per line) for each sample. Samples are assumed to be in the same" << endl;
+    cerr << "                                    order as the columns of the input matrix." << endl; 
+    cerr << "\t--output STR                " << "A prefix for output files." << endl;
     cerr << "\t--npops INT                 " << "Number of populations." << endl;
     cerr << "\t--nloci INT                 " << "Number of loci. This should match the number of loci in the input file." << endl;
     cerr << "\t--pop-size INT              " << "Effective population size for all populations." << endl;
@@ -82,6 +91,7 @@ void print_help()
 enum OPTIONS
 {
     INPUT,
+    GENERATION_TIMES,
     OUTPUT,
     NPOPS,
     NLOCI,
@@ -98,6 +108,7 @@ enum OPTIONS
 static struct option long_options[] =
 {
     {"input"             , required_argument, NULL, INPUT             },
+    {"generation-times"  , required_argument, NULL, GENERATION_TIMES  },
     {"output"            , required_argument, NULL, OUTPUT            },
     {"npops"             , required_argument, NULL, NPOPS             },
     {"nloci"             , required_argument, NULL, NLOCI             },
@@ -123,6 +134,7 @@ int main(int argc, char* const argv[])
     }
 
     string in_file           = "";
+    string in_gen_times_file = "";
     string out_file          = "";
     int random_seed          = 0;
     int hold_out_seed        = 28149;
@@ -140,6 +152,9 @@ int main(int argc, char* const argv[])
         switch (c) {
             case INPUT:
                 in_file = optarg;
+                break;
+            case GENERATION_TIMES:
+                in_gen_times_file = optarg;
                 break;
             case OUTPUT:
                 out_file = optarg;
@@ -183,6 +198,10 @@ int main(int argc, char* const argv[])
         cerr << "missing argument: --input" << endl;
         return 1;
     }
+    else if (in_gen_times_file == "") {
+        cerr << "missing argument: --generation-times" << endl;
+        return 1;
+    }
     else if (random_seed == 0) {
         cerr << "missing argument: --seed" << endl;
         return 1;
@@ -217,7 +236,7 @@ int main(int argc, char* const argv[])
     std_vector3<short> *snps = new std_vector3<short>;
 
     vector<int> gen_sampled;
-    read_snp_matrix(in_file, snps, gen_sampled, nloci);
+    map<int, pair<int, int> > sample_map = read_snp_matrix(in_file, in_gen_times_file, snps, gen_sampled, nloci);
     SNPData snp_data(snps, gen_sampled, hold_out_fraction, hold_out_seed);
     vector2<int> labels(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]);
     bool use_labels = false;
@@ -232,7 +251,7 @@ int main(int argc, char* const argv[])
     }
 
     cout << "initializing variational parameters..." << endl;
-    SVI svi(npop, theta_prior, pop_size, snp_data, gen, nloci, tol, step_power, labels, use_labels);
+    SVI svi(npop, theta_prior, pop_size, snp_data, gen, nloci, tol, step_power, sample_map, labels, use_labels);
 
     cout << "running..." << endl;
     svi.run_stochastic();

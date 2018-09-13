@@ -23,6 +23,7 @@ along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <boost/math/special_functions/digamma.hpp>
 #include <boost/math/special_functions/gamma.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/gamma_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -30,11 +31,12 @@ along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/random/uniform_int_distribution.hpp>
 #include <cassert>
 #include <cmath>
+#include <fstream>
 #include <random>
 #include <string>
 #include <ios>
 #include <iostream>
-#include <fstream>
+#include <map>
 #include <iomanip>
 #include <utility>
 
@@ -50,8 +52,10 @@ using std::istringstream;
 using std::setw;
 using std::skipws;
 
+
 using boost::math::digamma;
 using boost::math::lgamma;
+using boost::numeric::ublas::matrix;
 using boost::random::mt19937;
 using boost::random::gamma_distribution;
 using boost::random::normal_distribution;
@@ -62,42 +66,47 @@ using std::abs;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::fixed;
 using std::flush;
 using std::ios;
+using std::map;
 using std::max;
 using std::min;
 using std::ofstream;
 using std::pair;
+using std::scientific;
 using std::setprecision;
 using std::setfill;
 using std::string;
 using std::vector;
 
 
-SVI::SVI(int                     npops,
-           std::vector<double>     mixture_prior,
-           double                  pop_size,
-           SNPData                 snp_data,
-           boost::random::mt19937& gen,
-           size_t                  nloci,
-           double                  tol,
-           double                  step_power,
-           vector2<int>            labels,
-           bool                    using_labels) :
-           npops(npops),
-           nloci(nloci),
-           nsteps(snp_data.total_time_steps()),
-           initial_freq(boost::extents[npops][nloci]),
-           freqs(boost::extents[snp_data.total_time_steps()][npops][nloci][2]),
-           pseudo_outputs(boost::extents[npops][nloci][snp_data.total_time_steps()]),
-           phi(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()][npops]),
-           zeta(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()][npops]),
-           theta(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()][npops]),
-           nloci_indv(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
-           sample_iter(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
-           tol(tol),
-           step_power(step_power),
-           labels(labels)
+SVI::SVI(int                       npops,
+         vector<double>            mixture_prior,
+         double                    pop_size,
+         SNPData                   snp_data,
+         boost::random::mt19937&   gen,
+         size_t                    nloci,
+         double                    tol,
+         double                    step_power,
+         map<int,pair<int, int> > sample_map,
+         vector2<int>              labels,
+         bool                      using_labels) :
+         npops(npops),
+         nloci(nloci),
+         nsteps(snp_data.total_time_steps()),
+         initial_freq(boost::extents[npops][nloci]),
+         freqs(boost::extents[snp_data.total_time_steps()][npops][nloci][2]),
+         pseudo_outputs(boost::extents[npops][nloci][snp_data.total_time_steps()]),
+         phi(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()][npops]),
+         zeta(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()][npops]),
+         theta(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()][npops]),
+         nloci_indv(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
+         sample_iter(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
+         tol(tol),
+         sample_map(sample_map),
+         step_power(step_power),
+         labels(labels)
 {   
     this->mixture_prior = mixture_prior;
     this->pop_size = pop_size;
@@ -105,7 +114,6 @@ SVI::SVI(int                     npops,
     this->gen = gen;
     this->using_labels = using_labels;
 
-    cout << setprecision(5);
     initialize_variational_parameters();
 }
 
@@ -113,7 +121,9 @@ SVI::SVI(int                     npops,
 
 void SVI::initialize_variational_parameters()
 {
+    nindv = 0;
     for (size_t t = 0; t < nsteps; ++t) {
+        nindv += snp_data.total_individuals(t);
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
             nloci_indv[t][d] = 0;
             for (size_t l = 0; l < nloci; ++l) {
@@ -374,10 +384,15 @@ void SVI::run_stochastic()
             theta_converged = check_theta_convergence(prev_theta);
             prev_theta = theta;
             cout << "it:\t" << it << setw(10);
-            cout << "\tstep size:\t" << ss << setw(10);
-            cout << "\tdelta:\t" << theta_converged.second << endl;
+            cout << scientific << setprecision(3) << "\tstep size:\t" << ss << setw(10);
+            cout << fixed << "\tdelta:\t" << theta_converged.second << endl;
             write_temp();
         }
+
+        if (it % nloci == 0) {
+            cout << "\tepoch\t" << int(it/nloci) << "\thold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
+        }
+
     }
     cout << "hold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
 }
@@ -420,17 +435,17 @@ void SVI::write_results(string out_file)
     out_freq.close();
 
     ofstream out_theta(out_file + "_theta");
-    for (size_t t = 0; t < nsteps; ++t) {
-        for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
-            double s = 0;
-            for (size_t k = 0; k < npops; ++k) {
-                s += theta[t][d][k];
-            }
-            for (size_t k = 0; k < npops - 1; ++k) {
-                out_theta << theta[t][d][k] / s << "\t";
-            }
-            out_theta << theta[t][d][npops - 1] / s << endl;
+    for (int i = 0; i < nindv; ++i) {
+        int t = sample_map[i].first;
+        int d = sample_map[i].second;
+        double s = 0;
+        for (size_t k = 0; k < npops; ++k) {
+            s += theta[t][d][k];
         }
+        for (size_t k = 0; k < npops - 1; ++k) {
+            out_theta << theta[t][d][k] / s << "\t";
+        }
+        out_theta << theta[t][d][npops - 1] / s << endl;
     }
     out_theta.close();
 }
@@ -440,13 +455,13 @@ void SVI::write_results(string out_file)
 void SVI::write_temp()
 {
     ofstream out_theta("temp_theta");
-    for (size_t t = 0; t < nsteps; ++t) {
-        for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
-            for (size_t k = 0; k < npops - 1; ++k) {
-                out_theta << theta[t][d][k] << "\t";
-            }
-            out_theta << theta[t][d][npops - 1] << endl;
+    for (int i = 0; i < nindv; ++i) {
+        int t = sample_map[i].first;
+        int d = sample_map[i].second;
+        for (size_t k = 0; k < npops - 1; ++k) {
+            out_theta << theta[t][d][k] << "\t";
         }
+        out_theta << theta[t][d][npops - 1] << endl;
     }
     out_theta.close();
 }

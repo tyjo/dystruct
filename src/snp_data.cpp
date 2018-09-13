@@ -29,8 +29,6 @@ using std::pair;
 using std::map;
 using std::vector;
 
-#include <iostream>
-
 SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double hold_out_proportion, int hold_out_seed)
     : sample_gen(sample_gen)
 {
@@ -46,7 +44,7 @@ SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double 
     for (size_t t = 0; t < (*snps).size(); ++t)
         total_individuals += (*snps)[t].size();
 
-    size_t nloci = snps[0][0].size();
+    size_t nloci = (*snps)[0][0].size();
     int nlocations = nloci * hold_out_proportion;
     std::set<int> picked;
     boost::random::uniform_int_distribution<int> ldist(0, nloci - 1);

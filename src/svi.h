@@ -22,6 +22,7 @@ along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/random/mersenne_twister.hpp>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 #include <utility>
@@ -33,16 +34,17 @@ along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 class SVI
 {
   public:
-    SVI(int                     npops,
-        std::vector<double>     mixture_prior,
-        double                  pop_size,        // fixed population size
-        SNPData                 snp_data,
-        boost::random::mt19937& gen,
-        size_t                  nloci,
-        double                  tol,
-        double                  step_power,
-        vector2<int>            labels,
-        bool                    using_labels = false);
+    SVI(int                                 npops,
+        std::vector<double>                 mixture_prior,
+        double                              pop_size,        // fixed population size
+        SNPData                             snp_data,
+        boost::random::mt19937&             gen,
+        size_t                              nloci,
+        double                              tol,
+        double                              step_power,
+        std::map<int,std::pair<int, int> > sample_map,
+        vector2<int>                        labels,
+        bool                                using_labels = false);
 
     // Stochastic variational inference
     inline bool update_auxiliary_parameters(int locus);
@@ -61,7 +63,8 @@ class SVI
     std::vector<double>                 mixture_prior;  // prior parameter for dirichlet distribution
     const size_t                        npops;
     const size_t                        nloci;
-    const size_t                        nsteps;         // number of time steps with samples   
+    const size_t                        nsteps;         // number of time steps with samples
+    int                                 nindv;          // number of individuals
     SNPData                             snp_data;       // snp data matrix
     boost::random::mt19937              gen;
     double                              pop_size;       // if specified, fixes population size rather than performing variational EM
@@ -80,6 +83,7 @@ class SVI
     vector2<int>                        sample_iter;    // store the number of iterations for each sample. use for step size
     double                              tol;            // convergence threshold
     double                              step_power;     // determines step size per iteration. after first 10000 iterations, step size becomes (iteration - offset)^step_power
+    std::map<int,std::pair<int, int> > sample_map;     // map from original row in SNP matrix to row in ancestry proportions
     bool                                using_labels = false;
     
     inline void   update_auxiliary_local(size_t t, size_t d, size_t l);
