@@ -1,3 +1,10 @@
+# THIS README IS OUT OF DATE FOR v.1.0.0.
+A new README will replace this shortly. The most up to date documentation is available by typing
+```
+./bin/dystruct -h
+```
+on the command line after compilation.
+
 # Introduction
 Dystruct is a model-based approach for inferring ancestry proportions from time-series genotype data, in particular ancient DNA. Dystruct corrects for genetic drift between ancient and contemporary populations
 
