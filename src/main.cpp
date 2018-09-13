@@ -41,7 +41,7 @@ using std::setprecision;
 using std::string;
 using std::vector;
 
-string VERSION = "v0.2.3";
+string VERSION = "v0.2.4";
 
 
 void print_help()
