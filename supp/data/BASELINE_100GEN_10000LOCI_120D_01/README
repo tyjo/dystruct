@@ -1,6 +1,0 @@
-python ../../scripts/simulate.py -k 3 -l 10000 -s 2671 --set baseline --sizes 2500 2500 2500 --samples 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 40
-Simulating:
-   120 individuals
-   10000 loci
-   100 generations
-   3 populations
