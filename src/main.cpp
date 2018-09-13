@@ -57,6 +57,7 @@ void print_help()
     cerr << "Usage:   dystruct [options]" << endl;
     cerr << endl;
     cerr << "Required Arguments:" << endl;
+    cerr << "\t-h, --help                  " << "Print this help message." << endl;
     cerr << "\t--input FILE                " << "Path to genotype matrix: a LOCI x INDIVIDUAL matrix of genotypes in the" << endl
          << "                                    EIGENSTRAT genotype format. Each genotype is denoted by either 0, 1, 2, or 9," << endl
          << "                                    where 9 identifies missing entries. There are no spaces between entries." << endl
@@ -127,8 +128,7 @@ static struct option long_options[] =
 
 int main(int argc, char* const argv[])
 {
-
-    if (argc <= 1) {
+    if (argc <= 2) {
         print_help();
         return 1;
     }
