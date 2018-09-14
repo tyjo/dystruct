@@ -25,6 +25,8 @@ along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include "snp_data.h"
 
+#include <iostream>
+
 using std::pair;
 using std::map;
 using std::vector;
@@ -71,6 +73,8 @@ SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double 
 
         // make sure we have data
         while (missing(t, individual, draw)) {
+            t = tdist(gen);
+            boost::random::uniform_int_distribution<int> idist(0, (*snps)[t].size() - 1);
             individual = idist(gen);
         }
 

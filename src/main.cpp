@@ -237,6 +237,8 @@ int main(int argc, char* const argv[])
 
     vector<int> gen_sampled;
     map<int, pair<int, int> > sample_map = read_snp_matrix(in_file, in_gen_times_file, snps, gen_sampled, nloci);
+    if (hold_out_fraction > 0)
+        cout << "constructing hold out set..." << endl;
     SNPData snp_data(snps, gen_sampled, hold_out_fraction, hold_out_seed);
     vector2<int> labels(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]);
     bool use_labels = false;
