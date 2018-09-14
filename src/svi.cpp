@@ -390,7 +390,7 @@ void SVI::run_stochastic()
         }
 
         if (it % nloci == 0) {
-            cout << "\tepoch\t" << int(it/nloci) << "\thold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
+            cout << "\tepoch:\t" << int(it/nloci) << "\thold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
         }
 
     }
