@@ -130,7 +130,7 @@ int check_input_file(string fname, int nloci, int n_columns)
 
         if (col_count != n_columns) {
             cerr << "Input Error (" << fname << "): line " << locus_count << " has "
-                 << col_count << " samples, but header has " << n_columns << "." << endl;
+                 << col_count << " samples, but generation file has " << n_columns << "." << endl;
             exit(1);
         }
     }
