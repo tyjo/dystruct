@@ -151,7 +151,7 @@ void SVI::initialize_variational_parameters()
         }
 
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
-            gamma_distribution<double> gamma(0.65*(double)nloci_indv[t][d]/100, 100);
+            gamma_distribution<double> gamma((1./npops)*(double)nloci_indv[t][d]/100, 100);
             for (size_t k = 0; k < npops; ++k) {
                 if (using_labels && labels[t][d] != -1 && labels[t][d] != (int)k) {
                     theta[t][d][k] = 1;
@@ -367,6 +367,7 @@ void SVI::run_stochastic()
     vector3<double> prev_theta = theta;
     pair<bool, double> theta_converged(false, 100);
     uniform_int_distribution<int> idist(0, nloci - 1);
+
 
     while (it < nloci || !theta_converged.first) {
         it++;
