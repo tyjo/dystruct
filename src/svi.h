@@ -40,9 +40,8 @@ class SVI
         SNPData                             snp_data,
         boost::random::mt19937&             gen,
         size_t                              nloci,
-        double                              tol,
-        double                              step_power,
-        std::map<int,std::pair<int, int> > sample_map,
+        int                                 nepochs,
+        std::map<int,std::pair<int, int> >  sample_map,
         vector2<int>                        labels,
         bool                                using_labels = false);
 
@@ -81,9 +80,9 @@ class SVI
     vector2<int>                        nloci_indv;
     vector2<int>                        labels;
     vector2<int>                        sample_iter;    // store the number of iterations for each sample. use for step size
-    double                              tol;            // convergence threshold
-    double                              step_power;     // determines step size per iteration. after first 10000 iterations, step size becomes (iteration - offset)^step_power
-    std::map<int,std::pair<int, int> > sample_map;     // map from original row in SNP matrix to row in ancestry proportions
+    int                                 nepochs;        // number of epochs to run before terminating
+    double                              step_power = -0.55;
+    std::map<int,std::pair<int, int> >  sample_map;     // map from original row in SNP matrix to row in ancestry proportions
     bool                                using_labels = false;
     
     inline void   update_auxiliary_local(size_t t, size_t d, size_t l);

@@ -74,14 +74,11 @@ void print_help()
     cerr << endl;
     cerr << "Optional Arguments:" << endl;
     cerr << "\t--hold-out-fraction DOUBLE  " << "(=0) Optional. Partitions nloci * hold_out_fraction loci into a hold out" << endl
-         << "                                    set. The hold out set contains at most one site per individual." << endl;
+         << "                                    set. The hold out set contains at most one individual per site." << endl;
     cerr << "\t--hold-out-seed INT         " << "(=28149) Optional. Random seed used to partition SNP data into hold out" << endl
          << "                                    and training sets. Use the same seed across replicates to fix the hold" << endl
          << "                                    out set." << endl;
-    cerr << "\t--tol DOUBLE                " << "(=1) Optional. Convergence threshold in number of loci. Programs terminates" << endl
-         << "                                    when delta < tol." << endl;
-    cerr << "\t--step-size-power DOUBLE    " << "(=-0.6) Optional. Adjusts step size for stochastic variational inference." << endl
-         << "                                    step_size = (iteration + 1)^step-size-power. Must be in [-1,-0.5)." << endl;
+    cerr << "\t--epochs INT                " << "(=50) Optional. Number of epochs to run before terminating." << endl;
     cerr << "\t--labels FILE               " << "Optional. Experimental. Population label file path for supervised analysis." << endl 
          << "                                    Labels should be in {0,...,npops - 1}. One label per line in the same order" << endl
          << "                                    as the input matrix. Individuals without a population assignment should be" << endl
@@ -100,8 +97,7 @@ enum OPTIONS
     SEED,
     HOLD_OUT_FRACTION,
     HOLD_OUT_SEED,
-    TOL,
-    STEP_SIZE_POWER,
+    EPOCHS,
     LABELS
 };
 
@@ -117,8 +113,7 @@ static struct option long_options[] =
     {"seed"              , required_argument, NULL, SEED              },
     {"hold-out-fraction" , required_argument, NULL, HOLD_OUT_FRACTION },
     {"hold-out-seed"     , required_argument, NULL, HOLD_OUT_SEED     },
-    {"tol"               , required_argument, NULL, TOL               },
-    {"step-size-power"   , required_argument, NULL, STEP_SIZE_POWER   },
+    {"epochs"            , required_argument, NULL, EPOCHS            },
     {"labels"            , required_argument, NULL, LABELS            },
     {NULL, no_argument, NULL, 0}
 };
@@ -142,8 +137,7 @@ int main(int argc, char* const argv[])
     int nloci                = 0;
     double hold_out_fraction = 0;
     double pop_size          = 0;
-    double tol               = 1;
-    double step_power        = -0.6;
+    int epochs               = 50;
     string label_file        = "";
 
     int c;
@@ -177,11 +171,8 @@ int main(int argc, char* const argv[])
             case HOLD_OUT_SEED:
                 hold_out_seed = atoi(optarg);
                 break;
-            case TOL:
-                tol = atof(optarg);
-                break;
-            case STEP_SIZE_POWER:
-                step_power = atof(optarg);
+            case EPOCHS:
+                epochs = atoi(optarg);
                 break;
             case LABELS:
                 label_file = optarg;
@@ -222,12 +213,8 @@ int main(int argc, char* const argv[])
         cerr << "proportion of held out sites must be between in [0, 1)" << endl;
         return 1;
     }
-    else if (tol < 0) {
-        cerr << "--tol must be positive" << endl;
-        return 1;
-    }
-    else if (step_power <= -1 || step_power > -0.5) {
-        cerr << "power for step size must be in the interval [-1, -0.5)" << endl;
+    else if (epochs < 0) {
+        cerr << "--epochs must be greater than 0" << endl;
         return 1;
     }
     
@@ -253,7 +240,7 @@ int main(int argc, char* const argv[])
     }
 
     cout << "initializing variational parameters..." << endl;
-    SVI svi(npop, theta_prior, pop_size, snp_data, gen, nloci, tol, step_power, sample_map, labels, use_labels);
+    SVI svi(npop, theta_prior, pop_size, snp_data, gen, nloci, epochs, sample_map, labels, use_labels);
 
     cout << "running..." << endl;
     svi.run_stochastic();

@@ -87,9 +87,8 @@ SVI::SVI(int                       npops,
          SNPData                   snp_data,
          boost::random::mt19937&   gen,
          size_t                    nloci,
-         double                    tol,
-         double                    step_power,
-         map<int,pair<int, int> > sample_map,
+         int                       nepochs,
+         map<int,pair<int, int> >  sample_map,
          vector2<int>              labels,
          bool                      using_labels) :
          npops(npops),
@@ -103,9 +102,8 @@ SVI::SVI(int                       npops,
          theta(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()][npops]),
          nloci_indv(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
          sample_iter(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
-         tol(tol),
+         nepochs(nepochs),
          sample_map(sample_map),
-         step_power(step_power),
          labels(labels)
 {   
     this->mixture_prior = mixture_prior;
@@ -218,9 +216,6 @@ bool SVI::update_auxiliary_parameters(int sample)
 {
     bool converged = true;
     for (size_t t = 0; t < nsteps; ++t) {
-        
-        // better to parallelize inner loop since sample
-        // tend to be sparse in t but dense in d
         #pragma omp parallel for reduction(&&:converged)
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
             if (snp_data.hidden(t,d,sample)) continue;
@@ -234,7 +229,7 @@ bool SVI::update_auxiliary_parameters(int sample)
             update_auxiliary_local(t,d,sample);
             
             for (size_t k = 0; k < npops; ++k) {
-                converged = (abs(prev_zeta[k] - zeta[t][d][k]) < 0.01) && (abs(prev_phi[k] - phi[t][d][k]) < 0.01) && converged;
+                converged = (abs(prev_zeta[k] - zeta[t][d][k]) < 0.001) && (abs(prev_phi[k] - phi[t][d][k]) < 0.001) && converged;
             }
         }
     }
@@ -310,20 +305,13 @@ void SVI::update_auxiliary_local(size_t t, size_t d, size_t l)
 
 void SVI::update_allele_frequencies(int locus)
 {
-    vector<VariationalKalmanSmoother> vks;
-    for (size_t k = 0; k < npops; ++k) {
-        vks.push_back(VariationalKalmanSmoother(snp_data, pseudo_outputs, initial_freq[k][locus], phi, zeta, pop_size, k, locus));
-    }
-    
     #pragma omp parallel for
     for (size_t k = 0; k < npops; ++k) {
-        vks[k].maximize_pseudo_outputs();
-    }
-
-    for (size_t k = 0; k < npops; ++k) {
-        vks[k].set_marginals(freqs, k, locus);
-        vks[k].set_outputs(pseudo_outputs);
-        initial_freq[k][locus] = vks[k].get_initial_mean();
+        VariationalKalmanSmoother vks = VariationalKalmanSmoother(snp_data, pseudo_outputs, initial_freq[k][locus], phi, zeta, pop_size, k, locus);
+        vks.maximize_pseudo_outputs();
+        vks.set_marginals(freqs, k, locus);
+        vks.set_outputs(pseudo_outputs);
+        initial_freq[k][locus] = vks.get_initial_mean();
     }
 }
 
@@ -360,17 +348,17 @@ void SVI::run_stochastic()
 {
     int          locus = 0;
     unsigned int it    = 0;
+    int epoch          = 0;
     double ss          = 1;
     bool   converged   = false;
 
-    // monitor convergence
     vector3<double> prev_theta = theta;
-    pair<bool, double> theta_converged(false, 100);
     uniform_int_distribution<int> idist(0, nloci - 1);
 
 
-    while (it < nloci || !theta_converged.first) {
+    while (epoch < nepochs) {
         it++;
+        epoch = (int)(it/nloci);
         locus = idist(gen);
         ss = pow(it + 1, step_power);
 
@@ -382,42 +370,19 @@ void SVI::run_stochastic()
         update_mixture_proportions(locus);
 
         if (it % 1000 == 0 || it == 1) {
-            theta_converged = check_theta_convergence(prev_theta);
             prev_theta = theta;
-            cout << "it:\t" << it << setw(10);
-            cout << scientific << setprecision(3) << "\tstep size:\t" << ss << setw(10);
-            cout << fixed << "\tdelta:\t" << theta_converged.second << endl;
-            write_temp();
+            cout << "it:\t" << it << setw(12);
+            cout << scientific << setprecision(3) << "\tstep size:\t" << ss << endl;
         }
 
         if (it % nloci == 0) {
-            cout << "\tepoch:\t" << int(it/nloci) << "\thold out conditional log likelihood:\t" << compute_ho_log_likelihood() << endl;
+            write_temp();
+            cout << "\tepoch:\t" << epoch << "\thold out conditional log likelihood:\t" << compute_ho_log_likelihood() << endl;
         }
-
     }
     cout << "hold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
 }
 
-
-
-
-pair<bool, double> SVI::check_theta_convergence(const vector3<double>& prev_theta)
-{
-    double delta = 0;
-    double count = 0;
-    for (size_t t = 0; t < nsteps; ++t) {
-        for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
-            if (using_labels && labels[t][d] != -1) continue;
-            
-            for (size_t k = 0; k < npops; ++k) {
-                delta += abs(prev_theta[t][d][k] - theta[t][d][k]);
-                count += 1;
-            }
-        }
-    }
-    delta /= count;
-    return pair<bool, double>(delta < tol, delta);
-}
 
 
 
