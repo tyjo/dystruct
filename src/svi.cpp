@@ -377,9 +377,11 @@ void SVI::run_stochastic()
 
         if (it % nloci == 0) {
             write_temp();
+            cout << setprecision(5);
             cout << "\tepoch:\t" << epoch << "\thold out conditional log likelihood:\t" << compute_ho_log_likelihood() << endl;
         }
     }
+    cout << setprecision(5);
     cout << "hold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
 }
 
