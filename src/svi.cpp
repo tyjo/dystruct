@@ -323,9 +323,10 @@ void SVI::update_mixture_proportions(int locus)
     double step_size;
     for (size_t t = 0; t < nsteps; ++ t) {
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
+            if (snp_data.hidden(t, d, l)) continue;
+            else sample_iter[t][d]++;
             for (size_t k = 0; k < npops; ++k) {
                 double update = 0;
-                if (snp_data.hidden(t, d, l)) continue;
 
                 step_size = pow(sample_iter[t][d] + 1, step_power);
                 
@@ -337,8 +338,6 @@ void SVI::update_mixture_proportions(int locus)
                                               );
                 theta[t][d][k] = max(theta[t][d][k], 1.0);
             }
-            if (!snp_data.hidden(t, d, l))
-                sample_iter[t][d]++;
         }
     }
 }
