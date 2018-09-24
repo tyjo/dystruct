@@ -2,12 +2,12 @@
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
-  * [Quick Start](#quick-start)
+   * [Quick Start](#quick-start)
 3. [Running Dystruct](#running-dystruct)
-  * [Input Files](#input-files)
-  * [Comparing Runs (Choosing K)](#model-choice)
-  * [Running Time](#running-time)
-  * [Convergence](#convergence)
+   * [Input Files](#input-files)
+   * [Comparing Runs (Choosing K)](#model-choice)
+   * [Running Time](#running-time)
+   * [Convergence](#convergence)
 
 ## Introduction
 Dystruct (Dynamic structure) is a model-based approach for inferring shared ancestry in individuals sampled over time. The input the model is a genotype matrix, sample times for each individual, and the number of putative ancestral populations (K). The output are K-dimensional ancestry vectors denoting the proportion of the the genome of each individual inherited from population K.
