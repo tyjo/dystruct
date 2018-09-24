@@ -144,12 +144,12 @@ void SVI::initialize_variational_parameters()
         for (size_t k = 0; k < npops; ++k) {
             for (size_t l = 0; l < nloci; ++l) {
                 freqs[t][k][l][0] = initial_freq[k][l];
-                freqs[t][k][l][1] =  1.0/(12*pop_size);
+                freqs[t][k][l][1] = 1.0/(12*pop_size);
             }
         }
 
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
-            gamma_distribution<double> gamma((1./npops)*(double)nloci_indv[t][d]/100, 100);
+            gamma_distribution<double> gamma(10, 10);
             for (size_t k = 0; k < npops; ++k) {
                 if (using_labels && labels[t][d] != -1 && labels[t][d] != (int)k) {
                     theta[t][d][k] = 1;
@@ -169,7 +169,7 @@ void SVI::initialize_variational_parameters()
     for (size_t k = 0; k < npops; ++k) {
         for (size_t l = 0; l < nloci; ++l) {
             for (size_t t = 0; t < nsteps; ++t) {
-                pseudo_outputs[k][l][t] = uniform(gen);
+                pseudo_outputs[k][l][t] = initial_freq[k][l];
             }
         }
     }
