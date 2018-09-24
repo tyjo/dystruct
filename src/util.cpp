@@ -144,15 +144,16 @@ int check_input_file(string fname, int nloci, int n_columns)
 }
 
 
-map<int, pair<int, int> > read_snp_matrix(string fname, string gen_fname, std_vector3<short> *snps, vector<int>& gen_sampled, int nloci)
+map<int, pair<int, int> > read_snp_matrix(string fname, string gen_fname, std_vector3<short> *snps, vector<int>& gen_sampled, int& nloci)
 {
     cout << "loading genotype matrix (this should not take more than a few minutes)..." << endl;
     cout << "\tchecking input file..." << endl;
     vector<int> generations = read_generations(gen_fname, gen_sampled);
     int found_loci = check_input_file(fname, nloci, generations.size());
+    nloci = found_loci;
 
     cout << "\tfound " << generations.size() << " samples at " << gen_sampled.size() << " time points..." << endl;
-    cout << "\tusing " << found_loci << " loci..." << endl; 
+    cout << "\tusing " << nloci << " loci..." << endl; 
 
     ifstream input(fname);
     if (!input.is_open()) {

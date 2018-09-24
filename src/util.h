@@ -28,7 +28,7 @@ along with Dystruct.  If not, see <http://www.gnu.org/licenses/>.
 #include "snp_data.h"
 #include "vector_types.h"
 
-std::map<int, std::pair<int, int> > read_snp_matrix(std::string fname, std::string gen_fname, std_vector3<short> *snps, std::vector<int>& gen_sampled, int nloci);
+std::map<int, std::pair<int, int> > read_snp_matrix(std::string fname, std::string gen_fname, std_vector3<short> *snps, std::vector<int>& gen_sampled, int& nloci);
 vector2<int> read_pop_labels(std::string fname, SNPData& snp_data);
 
 #endif
