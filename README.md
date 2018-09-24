@@ -1,27 +1,26 @@
-# THIS README IS OUT OF DATE FOR v.1.0.0.
-A new README will replace this shortly. The most up to date documentation is available by typing
-```
-./bin/dystruct -h
-```
-on the command line after compilation.
+# Dystruct (Dynamic structure)
 
-# Introduction
-Dystruct is a model-based approach for inferring ancestry proportions from time-series genotype data, in particular ancient DNA. Dystruct corrects for genetic drift between ancient and contemporary populations
+1. [Introduction](#introduction)
+2. [Installation](#installation)
+  * [Quick Start](#quick-start)
+3. [Running Dystruct](#running-dystruct)
+  * [Input Files](#input-files)
+  * [Comparing Runs (Choosing K)](#model-choice)
+  * [Running Time](#running-time)
+  * [Convergence](#convergence)
 
-## Getting Started
+## Introduction
+Dystruct (Dynamic structure) is a model-based approach for inferring shared ancestry in individuals sampled over time. The input the model is a genotype matrix, sample times for each individual, and the number of putative ancestral populations (K). The output are K-dimensional ancestry vectors denoting the proportion of the the genome of each individual inherited from population K.
 
-### Quick Start
+The main benefit of Dystruct, when compared to static ancestry approaches such as ADMIXTURE, is Dystruct's emphasis on explaining later populations as mixtures of earlier, pre-existing, populations. That is, later samples tend to appear as mixtures of earlier samples. Because we model samples over time, ancestry components give a direct interpretation of the relationship between populations in the past, and populations today.
 
-```
-git clone https://github.com/tyjo/dystruct
-cd dystruct
-make
-./bin/dystruct
-./run.sh
-```
+## Installation
 
-### OpenMP
-Dystruct depends on the OpenMP API for parallel computation. Unfortunately, OpenMP is not supported on the clang compiler shipped with macOS. Mac users will need to compile Dystruct using a different C++ compiler. To install gcc using homebrew, simply call
+Dystruct requires a C++ compiler (preferably gcc v6.1 or later).
+
+### macOS and OpenMP
+Dystruct depends on the OpenMP API for parallel computation. 
+OpenMP is not supported on some compliers, most notably the clang compiler shipped with macOS. Mac users will need to compile Dystruct using a different C++ compiler. To install gcc using homebrew, simply call
 
 ```
 brew install gcc6
@@ -35,18 +34,37 @@ clang: error: unsupported option '-fopenmp'
 
 You can either remove this flag from the makefile, which disables parallel computation, or install a different compiler per the above directions.
 
+### Quick Start
+
+To compile and run on example data, type:
+
+```
+git clone https://github.com/tyjo/dystruct
+cd dystruct
+make
+./bin/dystruct
+./run.sh
+```
+
 
 ## Running Dystruct
 
-### Parallel Computation
-Dystruct parallelizes certain sections of its algorithm for faster computation using the OpenMP library. To specify the number of threads OpenMP looks for the environment variable OMP\_NUM\_THREADS. Thus, if you want to use 2 threads, you should call
+### Input Files
+Dystruct requires two files to run: a genotype matrix in the EIGENSTRAT .geno format, and a list (one per line) of generation times for each sample. Example .geno and generation time files are available in `supp/example_data/`. The script `run.sh` runs Dystruct on the example data.
+
+The genotype matrix is a SNPs by individual matrix where each entry encodes the number of non-reference alleles (i.e. 0, 1, 2) for that genotype with no spaces between entries. Missing data is denoted by 9. For example, a file with 10 individuals sampled at 3 sites may look like
 
 ```
-export OMP_NUM_THREADS=2
+0121100292
+1129991221
+0901120000
 ```
 
-before running.
+The [convertf](https://github.com/DReichLab/AdmixTools/tree/master/convertf) program converts between several standard formats including: EIGENSTRAT (used by Dystruct), PED, and ANCESTRYMAP.
 
+The generation times file contains one line per individual giving the generation time the individual was alive. Generation times are necessarily imprecise due to uncertainty in carbon-date estimates or estimates of the date for each culture. In practice we found that precise dates are necessary to infer historical relationships.
+
+It is recommended to reduce the number of distinct generation times used to be 15 or fewer, either grouping individuals within the same culture, or grouping generation times into a smaller number of bins.  A script to bin generation times is available under ``supp/scripts/bin_sample_times.py``.
 
 
 ### Arguments
@@ -56,68 +74,74 @@ Dystruct takes several command line arguments:
 Usage:   dystruct [options]
 
 Required Arguments:
-	--input FILE                Genotype file path. An LOCI x INDIVIDUAL matrix of genotypes. The header
-                                    is the sample time in generations. Samples must be ordered in increasing
-                                    generation time.
-	--output STR                A file prefix for output files.
+	-h, --help                  Print this help message.
+	--input FILE                Path to genotype matrix: a LOCI x INDIVIDUAL matrix of genotypes in the
+                                    EIGENSTRAT genotype format. Each genotype is denoted by either 0, 1, 2, or 9,
+                                    where 9 identifies missing entries. There are no spaces between entries.
+                                    See https://github.com/DReichLab/EIG/tree/master/CONVERTF for more details
+                                    and converting between standard formats.
+	--generation-times FILE     Path to generation times corresponding to the input file. A list of generation
+                                    times (one per line) for each sample. Samples are assumed to be in the same
+                                    order as the columns of the input matrix.
+	--output STR                A prefix for output files.
 	--npops INT                 Number of populations.
-	--loci INT                  Number of loci. This should match the number of loci in the input file.
+	--nloci INT                 Number of loci. This should match the number of loci in the input file.
 	--pop-size INT              Effective population size for all populations.
 	--seed INT                  Random seed used to initialize variational parameters
 
 Optional Arguments:
-      --hold-out-fraction DOUBLE  (=0) Optional. Partitions nloci * hold_out_fraction loci into a hold out
-                                    set. The hold out set contains at most one site per individual.
-      --hold-out-seed INT         (=28149) Optional. Random seed used to partition SNP data into hold out
+	--hold-out-fraction DOUBLE  (=0) Optional. Partitions nloci * hold_out_fraction loci into a hold out
+                                    set. The hold out set contains at most one individual per site.
+	--hold-out-seed INT         (=28149) Optional. Random seed used to partition SNP data into hold out
                                     and training sets. Use the same seed across replicates to fix the hold
                                     out set.
-      --tol DOUBLE                (=1) Optional. Convergence threshold in number of loci. Programs terminates
-                                    when delta < tol.
-      --step-size-power DOUBLE    (=-0.6) Optional. Adjusts step size for stochastic variational inference.
-                                    step_size = (iteration + 1)^step-size-power. Must be in [-1,-0.5).
-      --labels FILE               Optional. Experimental. Population label file path for supervised analysis.
+	--epochs INT                (=50) Optional. Number of epochs to run before terminating.
+	--labels FILE               Optional. Experimental. Population label file path for supervised analysis.
                                     Labels should be in {0,...,npops - 1}. One label per line in the same order
                                     as the input matrix. Individuals without a population assignment should be
                                     labeled by -1.
 ```
 
-For convenience, a shell script that runs Dystruct on a test data set and sets the appropriate environment variables is provided (run.sh).
 
-#### Input Files
-Dystruct takes as input a whitespace delimited file of genotypes. Each column is a vector of genotypes (0, 1, or 2) for a single sampled individual, where the header is the time (in generations) when the individual was sampled relative to the first sample. Sites are assumed to be biallelic, where a 0 denotes that an individual a homozygote with respect to one of the alleles, a 1 denotes that an individual is a heterozygote, and a 2 denotes that an individual is homozygous for the alternate allele. Missing sites should be labled by 9. **The columns and are assumed to be in ascending order of sample time.** Each row is a locus. Below is an example for 2 sampled loci from 3 individuals at time 0 and 1.
-
-```
-0 0 1
-0 1 2
-0 1 2
-2 2 0
-```
-There are two individuals sampled a time 0: the first with genotypes (0, 0, 2) and the second with genotypes (1, 1, 2).
-
-An example file is provided in
+### Parallel Computation
+Dystruct parallelizes certain sections of its algorithm for faster computation using the OpenMP library. To specify the number of threads OpenMP looks for the environment variable OMP\_NUM\_THREADS. You can control the number of threads the software uses by setting this environment variable. For example, if you want to use 2 threads call:
 
 ```
-./supp/data/BASELINE_100GEN_10000LOCI_120D_01/samples
+export OMP_NUM_THREADS=2
+./bin/dystruct --input FILE \
+               --generation-times FILE \
+               --output STR \
+               --nloci INT \
+               --pop-size INT \
+               --seed INT
+```
+
+For best performance set the number of threads to the number of ancestral populations (K):
+
+```
+export OMP_NUM_THREADS=K
 ```
 
 
-#### Output Files
+### Output Files
 Dystruct outputs two files with point estimates for inferred parameters, and a temporary file to monitor convergence. The prefix of these files is specified through the --output command line argument. The inferred parameter files are:
 
 - freqs : the inferred allele frequencies at all time steps
 - theta : the inferred ancestry proportions for all samples
 
-Dystruct also outputs a temporary file, temp\_theta, with the current estimates of the variational parameters for ancestry proportions. Each row is an individual, and each column a population. The number in each entry refers to the number of loci currently assigned to a population. Dystruct uses a relatively strick convergence criterion, and this file can be used to moniter looser convergence criteria.
+Dystruct also outputs a temporary file, temp\_theta, with the current estimates of the variational parameters for ancestry proportions. Each row is an individual, and each column a population. The number in each entry refers to the number of loci currently assigned to a population.
 
-#### Hold-out Fraction and Choosing Parameters
-Dystruct takes an option argument to hold out a subset of loci. After convergence, the program outputs the log likelihood of the held-out set, treating each time point independently. Specifically, the likelihood each binomial observation (genotype) is evaluated using the inferred allele frequencies at that time point and the individual's ancestry proportions. This has the benefit of being independent of the choice of effective population size, and can also be used to evaluate different choices of number of populations (*K*): choose the set of parameters with the highest held out log likelihood.
 
-Nonetheless, in our experience choosing *K* is of minor importance. Instead, like related ancestry inference programs, Dystruct should be run over a range of *K* and each *K* analyzed separately. Each *K* can give insight to a different relationship between ancient and modern samples.
+### Model Choice (Choosing K)
+Dystruct takes two optional arguments to hold out a subset of loci to model evaluation. These are `--hold-out-fraction` and `--hold-out-seed`. `--hold-out-fraction` is a number in [0,1] that gives a proportion of sites to partition into a hold out set. At most one site per individual is held out. Thus, if `--hold-out-fraction` is equal to 1, one locus in one individual is put into the hold out set for each SNP. Keeping the `--hold-out-seed` consistent across runs ensures that the same set of loci is held out for each run.
 
-#### Labeled Data
-Dystruct takes an optional argument with population assignment for ancient samples. These are treated as known and fixed. Ancestry is inferred for the remaining unlabeled samples. This feature is currently experimental, and has yet to be thoroughly investigated using simulations.
+After convergence, Dystruct outputs the conditional log likelihood on the hold out set. This is the binomial log likelihood given the current point estimates of ancestry proportions and allele frequencies. The final value can --- and should --- be used to compare runs on the same K, where the run with the highest conditional log likelihood is chosen. Similarly, the conditional log likelihood can be used to choose the "best" value of K. Nonetheless, we emphasize that results should be intepreted across multiple K. 
+
 
 ### Running Time
-Running time per iteration depends on two factors: i) how many times the algorithm has previously seen a loci, and ii) number of time points. Earlier iterations tend to be much slower than later iterations because it takes longer for the allele frequency estimates to converge. The time spent per iteration decreases after the first two or three cycles through each loci.
+Running time per iteration primarly depends on three factors. In order of importance, these are: i) how many times the algorithm has previously seen a loci, ii) number of time points, and iii) number of individuals. Earlier iterations tend to be much slower because it takes longer for the local parameter estimates at each locus to converge. Thus, performance during earlier iterations should not be used to estimate run time. In our experience, setting `OMP_NUM_THREADS=K`, Dystruct converged in less than 24 hours on a dataset of ~1800 individuals at ~300000 loci across 11 time points.
 
-The update step for allele frequency estimatation takes quadratic time with respect to the number of time points. Therefore it is desirable to group ancient samples into as few time points as possible. For example, ancient samples with overlapping confidence intervals for carbon date estimates should be combined into a single time point.
+
+### Convergence
+By default Dystruct terminates after 50 epochs, where one epoch occurs every `NLOCI` iterations. Using simulations we determined that this was adequate for convergence, but users with smaller datasets (<50000 loci) may consider increasing this number to 100. This setting can be changed using the `--epochs` argument.
+
