@@ -217,7 +217,7 @@ int main(int argc, char* const argv[])
         cerr << "--epochs must be greater than 0" << endl;
         return 1;
     }
-    
+
     // initialize random number generator
     mt19937 gen(random_seed);
     std_vector3<short> *snps = new std_vector3<short>;
@@ -233,7 +233,7 @@ int main(int argc, char* const argv[])
         labels = read_pop_labels(label_file, snp_data);
         use_labels = true;
     }
-    
+
     vector<double> theta_prior;
     for (int k = 0; k < npop; ++k) {
        theta_prior.push_back(1.0 / npop);
@@ -245,6 +245,6 @@ int main(int argc, char* const argv[])
     cout << "running..." << endl;
     svi.run_stochastic();
     svi.write_results(out_file);
-    
+
     return 0;
 }
