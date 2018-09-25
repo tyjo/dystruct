@@ -140,21 +140,21 @@ Dystruct also outputs a temporary file, temp\_theta, with the current estimates 
 ### Model Choice
 Dystruct takes two optional arguments to hold out a subset of loci to model evaluation. These are `--hold-out-fraction` and `--hold-out-seed`. `--hold-out-fraction` is a number in [0,1] that gives a proportion of sites to partition into a hold out set. At most one site per individual is held out. Thus, if `--hold-out-fraction` is equal to 1, one locus in one individual is put into the hold out set for each SNP. Keeping the `--hold-out-seed` consistent across runs ensures that the same set of loci is held out for each run.
 
-After convergence, Dystruct outputs the conditional log likelihood on the hold out set. This is the binomial log likelihood given the current point estimates of ancestry proportions and allele frequencies. The final value can --- and should --- be used to compare runs on the same K, where the run with the highest conditional log likelihood is chosen. Similarly, the conditional log likelihood can be used to choose the "best" value of K. Nonetheless, we emphasize that results should be intepreted across multiple K. 
+After convergence, Dystruct outputs the conditional log likelihood on the hold out set. This is the binomial log likelihood given the current point estimates of ancestry proportions and allele frequencies. The final value can --- and should --- be used to compare runs on the same K, where the run with the highest conditional log likelihood is chosen. Similarly, the conditional log likelihood can be used to choose the "best" value of K. Nonetheless, we emphasize that results should be interpreted across multiple K. 
 
 
 ### Running Time
-Running time per iteration primarly depends on three factors. In order of importance, these are: i) how many times the algorithm has previously seen a loci, ii) number of time points, and iii) number of individuals. Earlier iterations tend to be much slower because it takes longer for the local parameter estimates at each locus to converge. Thus, performance during earlier iterations should not be used to estimate run time. In our experience, setting `OMP_NUM_THREADS=K`, Dystruct converged in less than 24 hours on a dataset of ~1600 individuals at ~300000 loci across 11 time points.
+Running time per iteration primarily depends on three factors. In order of importance, these are: i) how many times the algorithm has previously seen a loci, ii) number of time points, and iii) number of individuals. Earlier iterations tend to be much slower because it takes longer for the local parameter estimates at each locus to converge. Thus, performance during earlier iterations should not be used to estimate run time. In our experience, setting `OMP_NUM_THREADS=K`, Dystruct converged in less than 24 hours on a dataset of ~1600 individuals at ~300000 loci across 11 time points.
 
 
 ### Convergence
 By default Dystruct terminates after 50 epochs, where one epoch occurs every `NLOCI` iterations. Users with smaller datasets (<50000 loci) may consider increasing this number to 100. This setting can be changed using the `--epochs` argument.
 
-## Intepreting Results
+## Interpreting Results
 
 ### Plotting
 Dystruct provides a script (`supp/scripts/plot_Q.py`) to plot stacked bar plots while matching colors across runs. Documentation for plotting can be found under `supp/scripts/README.md`.
 
 ### Local Optima
-Dystruct can sometimes to converge to a local optima. This often appears as ancient samples with the same culture appearing as two separate groups. In this case, it is recommended to re-run Dystruct when this occurs, and choose the run with the highest hold out conditional log likelihoood (see [Model Choice](#model-choice)).
+Dystruct can sometimes to converge to a local optima. This often appears as ancient samples with the same culture appearing as two separate groups. In this case, it is recommended to re-run Dystruct when this occurs, and choose the run with the highest hold out conditional log likelihood (see [Model Choice](#model-choice)).
 
