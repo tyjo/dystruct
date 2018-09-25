@@ -79,10 +79,10 @@ void print_help()
          << "                                    and training sets. Use the same seed across replicates to fix the hold" << endl
          << "                                    out set." << endl;
     cerr << "\t--epochs INT                " << "(=50) Optional. Number of epochs to run before terminating." << endl;
-    cerr << "\t--labels FILE               " << "Optional. Experimental. Population label file path for supervised analysis." << endl 
+    /*cerr << "\t--labels FILE               " << "Optional. Experimental. Population label file path for supervised analysis." << endl 
          << "                                    Labels should be in {0,...,npops - 1}. One label per line in the same order" << endl
          << "                                    as the input matrix. Individuals without a population assignment should be" << endl
-         << "                                    labeled by -1." << endl;
+         << "                                    labeled by -1." << endl;*/
 }
 
 

@@ -206,7 +206,7 @@ map<int, pair<int, int> > read_snp_matrix(string fname, string gen_fname, std_ve
 }
 
 
-
+// This is no longer correct
 vector2<int> read_pop_labels(string fname, SNPData& snp_data)
 {
     vector2<int> labels(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]);
