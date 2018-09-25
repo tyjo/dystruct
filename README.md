@@ -112,10 +112,6 @@ Optional Arguments:
                                     and training sets. Use the same seed across replicates to fix the hold
                                     out set.
 	--epochs INT                (=50) Optional. Number of epochs to run before terminating.
-	--labels FILE               Optional. Experimental. Population label file path for supervised analysis.
-                                    Labels should be in {0,...,npops - 1}. One label per line in the same order
-                                    as the input matrix. Individuals without a population assignment should be
-                                    labeled by -1.
 ```
 
 
