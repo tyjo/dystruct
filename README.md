@@ -18,9 +18,9 @@
    * [Local Optima](#local-optima)
 
 ## Introduction
-Dystruct (Dynamic structure) is a model-based approach for inferring shared genetic ancestry in individuals sampled over time. Dystruct's input is a genotype matrix, sample times for each individual, and the number of putative ancestral populations (K). The output are K-dimensional ancestry vectors denoting the proportion of the the genome of each individual inherited from population K.
+Dystruct (Dynamic structure) is a model-based approach for inferring shared genetic ancestry in individuals sampled over time. Dystruct's input is a genotype matrix, sample times for each individual, and the number of putative ancestral populations (K). The output are K-dimensional ancestry vectors denoting the proportion of the genome of each individual inherited from population K.
 
-The main benefit of Dystruct, when compared to static ancestry approaches such as ADMIXTURE, is Dystruct's emphasis on explaining later populations as mixtures of earlier, pre-existing, populations. That is, later samples tend to appear as mixtures of earlier samples. Because we model samples over time, ancestry components give a direct interpretation of the relationship between populations in the past, and populations today.
+The main benefit of Dystruct, when compared to static ancestry approaches such as ADMIXTURE, is Dystruct's emphasis on explaining later populations as mixtures of earlier, pre-existing, populations. That is, later samples tend to appear as mixtures of earlier samples. Because we model samples over time, ancestry components give a direct interpretation of the relationship between populations in the past and populations today.
 
 ## Installation
 
@@ -34,7 +34,7 @@ OpenMP is not supported on some compliers, most notably the clang compiler shipp
 brew install gcc6
 ```
 
-If your compiler does not support OpenMP, you will likely see the error
+Once you install a new compiler, you may need to update the compiler in the makefile (the variable CC) to point to the correct compiler. If your compiler does not support OpenMP, you will likely see the error
 
 ```
 clang: error: unsupported option '-fopenmp'
