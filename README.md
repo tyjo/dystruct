@@ -8,6 +8,7 @@
 * Generation times are now supplied in a separate file
 * Samples no longer need to be sorted by generation time
 * Improved convergence criteria substantially reduces runtime
+* Utility script to plot results
 
 ---
 
