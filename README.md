@@ -3,17 +3,17 @@
 **Current Version**: v1.0.0  
 
 1. [Introduction](#introduction)
-* [Installation](#installation)
+2. [Installation](#installation)
    * [Quick Start](#quick-start)
-* [Running Dystruct](#running-dystruct)
+3. [Running Dystruct](#running-dystruct)
    * [Input Files](#input-files)
    * [Model Choice (Choosing K)](#model-choice)
    * [Running Time](#running-time)
    * [Convergence](#convergence)
-* [Data Preprocessing](#data-preprocessing)
+4. [Data Preprocessing](#data-preprocessing)
    * [Generation Times](#generation-times)
    * [LD-Pruning](#ld-pruning)
-* [Interpreting Results](#interpreting-results)
+5. [Interpreting Results](#interpreting-results)
    * [Plotting](#plotting)
    * [Local Optima](#local-optima)
 
