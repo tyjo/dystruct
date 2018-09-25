@@ -1,13 +1,18 @@
 # Dystruct (Dynamic structure)
 
+**Current Version**: v1.0.0  
+
 1. [Introduction](#introduction)
 2. [Installation](#installation)
    * [Quick Start](#quick-start)
 3. [Running Dystruct](#running-dystruct)
    * [Input Files](#input-files)
-   * [Comparing Runs (Choosing K)](#model-choice)
+   * [Model Choice (Choosing K)](#model-choice)
    * [Running Time](#running-time)
    * [Convergence](#convergence)
+4. [Interpreting Results](#interpreting-results)
+   * [Plotting](#plotting)
+   * [Local Optima](#local-optima)
 
 ## Introduction
 Dystruct (Dynamic structure) is a model-based approach for inferring shared genetic ancestry in individuals sampled over time. Dystruct's input is a genotype matrix, sample times for each individual, and the number of putative ancestral populations (K). The output are K-dimensional ancestry vectors denoting the proportion of the the genome of each individual inherited from population K.
@@ -132,16 +137,24 @@ Dystruct outputs two files with point estimates for inferred parameters, and a t
 Dystruct also outputs a temporary file, temp\_theta, with the current estimates of the variational parameters for ancestry proportions. Each row is an individual, and each column a population. The number in each entry refers to the number of loci currently assigned to a population.
 
 
-### Model Choice (Choosing K)
+### Model Choice
 Dystruct takes two optional arguments to hold out a subset of loci to model evaluation. These are `--hold-out-fraction` and `--hold-out-seed`. `--hold-out-fraction` is a number in [0,1] that gives a proportion of sites to partition into a hold out set. At most one site per individual is held out. Thus, if `--hold-out-fraction` is equal to 1, one locus in one individual is put into the hold out set for each SNP. Keeping the `--hold-out-seed` consistent across runs ensures that the same set of loci is held out for each run.
 
 After convergence, Dystruct outputs the conditional log likelihood on the hold out set. This is the binomial log likelihood given the current point estimates of ancestry proportions and allele frequencies. The final value can --- and should --- be used to compare runs on the same K, where the run with the highest conditional log likelihood is chosen. Similarly, the conditional log likelihood can be used to choose the "best" value of K. Nonetheless, we emphasize that results should be intepreted across multiple K. 
 
 
 ### Running Time
-Running time per iteration primarly depends on three factors. In order of importance, these are: i) how many times the algorithm has previously seen a loci, ii) number of time points, and iii) number of individuals. Earlier iterations tend to be much slower because it takes longer for the local parameter estimates at each locus to converge. Thus, performance during earlier iterations should not be used to estimate run time. In our experience, setting `OMP_NUM_THREADS=K`, Dystruct converged in less than 24 hours on a dataset of ~1800 individuals at ~300000 loci across 11 time points.
+Running time per iteration primarly depends on three factors. In order of importance, these are: i) how many times the algorithm has previously seen a loci, ii) number of time points, and iii) number of individuals. Earlier iterations tend to be much slower because it takes longer for the local parameter estimates at each locus to converge. Thus, performance during earlier iterations should not be used to estimate run time. In our experience, setting `OMP_NUM_THREADS=K`, Dystruct converged in less than 24 hours on a dataset of ~1600 individuals at ~300000 loci across 11 time points.
 
 
 ### Convergence
-By default Dystruct terminates after 50 epochs, where one epoch occurs every `NLOCI` iterations. Using simulations we determined that this was adequate for convergence, but users with smaller datasets (<50000 loci) may consider increasing this number to 100. This setting can be changed using the `--epochs` argument.
+By default Dystruct terminates after 50 epochs, where one epoch occurs every `NLOCI` iterations. Users with smaller datasets (<50000 loci) may consider increasing this number to 100. This setting can be changed using the `--epochs` argument.
+
+## Intepreting Results
+
+### Plotting
+Dystruct provides a script (`supp/scripts/plot_Q.py`) to plot stacked bar plots while matching colors across runs. Documentation for plotting can be found under `supp/scripts/README.md`.
+
+### Local Optima
+Dystruct can sometimes to converge to a local optima. This often appears as ancient samples with the same culture appearing as two separate groups. In this case, it is recommended to re-run Dystruct when this occurs, and choose the run with the highest hold out conditional log likelihoood (see [Model Choice](#model-choice)).
 
