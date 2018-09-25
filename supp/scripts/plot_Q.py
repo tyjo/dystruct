@@ -55,7 +55,7 @@ def match_Q(Q, K, matchQ_path):
     # find the lowest contiguous value of K to
     # begin matching colors
     min_k = K
-    for k in range(K-1, 1, -1):
+    for k in range(K, 1, -1):
         try:
             Qmin = np.genfromtxt("Q" + str(k))
             min_k = k
@@ -66,7 +66,7 @@ def match_Q(Q, K, matchQ_path):
     # sequentially match columns for each
     # value of Q
     Qprv = np.genfromtxt(matchQ_path + "/Q" + str(min_k))
-    for i in range(3, K):
+    for i in range(min_k, K+1):
         Qnxt = np.genfromtxt(matchQ_path + "/Q" + str(i))
         order = match_one_Q(Qnxt, Qprv)
         Qnxt = Qnxt[:,order]
