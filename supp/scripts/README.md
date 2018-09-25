@@ -9,14 +9,13 @@ This folder provides Python3 scripts for common data processing operations and p
 The script `plot_Q.py` plots stacked bar plots for ancestry estimates while (optionally) mantaining colors across K. It has four required arguments:
 
 1. the filepath to the Q matrix to plot  
-2. the value of K to plot
-3. population labels of each sample (one per line, corresponding to each row of Q)
-4. and the order to plot populations (one per line, corresponding to each row of Q)
+2. population labels of each sample (one per line, corresponding to each row of Q)
+3. and the order to plot populations (one per line, corresponding to each row of Q)
 
 Calling
 
 ```
-python plot_Q.py Q3 3 samplelabels poporder
+python plot_Q.py Q3 samplelabels poporder
 ```
 
 will plot the results for 3 populations, where samples are grouped by their populations defined in `samplelabels` and ordered according to `poporder.` Within each population, samples are sorted by the ancestry proportions of their major contributing population.
@@ -28,9 +27,9 @@ To match labels across runs, `plot_Q.py` provies the optional argument `--match-
 For example, suppose we ran `K=2,3,4` and placed the Q matrices `Q2, Q3, Q4` in the folder `./Q_matrices.` We now want to plot the results for each `K`, matching the colors across runs. This can be achieved as follows
 
 ```
-python plot_Q.py ./Q_matrices/Q2 2 samplelabels poporder
-python plot_Q.py ./Q_matrices/Q3 3 samplelabels poporder --match_Q ./Q_matrices 
-python plot_Q.py ./Q_matrices/Q4 4 samplelabels poporder --match_Q ./Q_matrices 
+python plot_Q.py ./Q_matrices/Q2 samplelabels poporder
+python plot_Q.py ./Q_matrices/Q3 samplelabels poporder --match_Q ./Q_matrices 
+python plot_Q.py ./Q_matrices/Q4 samplelabels poporder --match_Q ./Q_matrices 
 
 ```
 You can alternatively match colors across different runs by specifying a folder of Q matrices from a previous run.
@@ -41,6 +40,6 @@ You can alternatively match colors across different runs by specifying a folder 
 
 Example:
 ```
-python plot_Q.py ./Q_matrices/Q3 3 samplelabels poporder --subset subset
+python plot_Q.py ./Q_matrices/Q3 samplelabels poporder --subset subset
 ```
 

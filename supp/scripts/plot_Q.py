@@ -57,14 +57,14 @@ def match_Q(Q, K, matchQ_path):
     min_k = K
     for k in range(K, 1, -1):
         try:
-            Qmin = np.genfromtxt("Q" + str(k))
+            Qmin = np.genfromtxt(matchQ_path + "/Q" + str(k))
             min_k = k
         except:
+            print("here")
             break
     print("matching colors from K =", min_k, "to", K)
 
-    # sequentially match columns for each
-    # value of Q
+    # sequentially match columns for each value of Q
     Qprv = np.genfromtxt(matchQ_path + "/Q" + str(min_k))
     for i in range(min_k, K+1):
         Qnxt = np.genfromtxt(matchQ_path + "/Q" + str(i))
@@ -151,7 +151,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Visualize ancestry estimates.")
     parser.add_argument("filepath",   type=str,                help="Path to Q matrix to plot.")
-    parser.add_argument("K",          type=int,                help="Value of K to plot.")
     parser.add_argument("samplelabels",  type=str,             help="File path to population labels for each sample (one per line).")
     parser.add_argument("poporder",   type=str,                help="File path giving the order to plot each population (one per line).")
     parser.add_argument("--match-Q",  type=str,  default=None, help="Match colors across K. The argument to --match-Q is a path to a folder" +
@@ -162,7 +161,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     path = args.filepath
-    K = args.K
     samplelabels = args.samplelabels
     poporder = args.poporder
     matchQ = args.match_Q
@@ -171,8 +169,7 @@ if __name__ == "__main__":
     spacing = args.spacing
 
     Q = np.genfromtxt(path)
-
-    assert Q.shape[1] == K, "error: value of K does not match Q matrix"
+    K = Q.shape[1]
 
     if matchQ is not None:
         Q = match_Q(Q, K, matchQ)
