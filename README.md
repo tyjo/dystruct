@@ -1,6 +1,14 @@
 # Dystruct (Dynamic structure)
 
-**Current Version**: v1.0.0  
+**Current Version**: v1.0.0 (September 2018)
+  
+#### What's New In v1.0.0
+
+* Input genotype matrix is now a standard format (EIGENSTRAT .geno)  
+* Generation times are now supplied in a separate file
+* Samples no longer need to be sorted by generation time
+* Improved convergence criteria substantially reduces runtime
+
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
