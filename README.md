@@ -9,6 +9,7 @@
 * Samples no longer need to be sorted by generation time
 * Improved convergence criteria substantially reduces runtime
 
+---
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
