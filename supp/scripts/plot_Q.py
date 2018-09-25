@@ -198,6 +198,7 @@ if __name__ == "__main__":
 
         samplelabels = sublabels
         poporder = subset
+        Q = Q[subids]
 
     plot_k(Q, samplelabels, poporder, fontsize, spacing)
 
