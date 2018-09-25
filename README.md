@@ -3,14 +3,17 @@
 **Current Version**: v1.0.0  
 
 1. [Introduction](#introduction)
-2. [Installation](#installation)
+* [Installation](#installation)
    * [Quick Start](#quick-start)
-3. [Running Dystruct](#running-dystruct)
+* [Running Dystruct](#running-dystruct)
    * [Input Files](#input-files)
    * [Model Choice (Choosing K)](#model-choice)
    * [Running Time](#running-time)
    * [Convergence](#convergence)
-4. [Interpreting Results](#interpreting-results)
+* [Data Preprocessing](#data-preprocessing)
+   * [Generation Times](#generation-times)
+   * [LD-Pruning](#ld-pruning)
+* [Interpreting Results](#interpreting-results)
    * [Plotting](#plotting)
    * [Local Optima](#local-optima)
 
@@ -67,9 +70,7 @@ The genotype matrix is a SNPs by individual matrix where each entry encodes the 
 
 The [convertf](https://github.com/DReichLab/AdmixTools/tree/master/convertf) program converts between several standard formats including: EIGENSTRAT (used by Dystruct), PED, and ANCESTRYMAP.
 
-The generation times file contains one line per individual giving the generation time the individual was alive. Generation times are necessarily imprecise due to uncertainty in carbon-date estimates or estimates of the date for each culture. In practice we found that precise dates are necessary to infer historical relationships.
-
-It is recommended to reduce the number of distinct generation times used to be 15 or fewer, either grouping individuals within the same culture, or grouping generation times into a smaller number of bins.  A script to bin generation times is available under ``supp/scripts/bin_sample_times.py``.
+The generation times file contains one line per individual giving the generation time the individual was alive. Generation times are necessarily imprecise due to uncertainty in carbon-date estimates or estimates of the date for each culture. In practice we found that precise dates are unnecessary to infer historical relationships.
 
 
 ### Arguments
@@ -150,6 +151,18 @@ Running time per iteration primarily depends on three factors. In order of impor
 ### Convergence
 By default Dystruct terminates after 50 epochs, where one epoch occurs every `NLOCI` iterations. Users with smaller datasets (<50000 loci) may consider increasing this number to 100. This setting can be changed using the `--epochs` argument.
 
+
+## Data Preprocessing
+
+### Generation Times
+Dystruct requires each sample to be assigned a generation time corresponding to when that individual was alive. Generation times can be estimated either using the date range from carbon date estimates, or the date range corresponding to the culture associated with that individual. Point estimates for sample dates can be computed by taking the midpoint of this range, and can further be converted into generations by assuming a generation time (for example, a 25 year generation time for humans). In practice, we found these estimates sufficient for inference.
+
+Reducing the number of distinct generation times can significantly improve runtime. We recommend using 15 or fewer distinct generation times, either by grouping individuals within the same culture, or by binning generation times into a smaller number of bins.  A script to bin generation times is available under `supp/scripts/bin_sample_times.py`.
+
+### LD Pruning
+
+We recommend LD pruning using [Plink](https://www.cog-genomics.org/plink2) following Lazaridis et al. (2016) [1] using the parameters `--indep-pairwise 200 25 0.4`.
+
 ## Interpreting Results
 
 ### Plotting
@@ -157,4 +170,9 @@ Dystruct provides a script (`supp/scripts/plot_Q.py`) to plot stacked bar plots 
 
 ### Local Optima
 Dystruct can sometimes to converge to a local optima. This often appears as ancient samples with the same culture appearing as two separate groups. In this case, it is recommended to re-run Dystruct when this occurs, and choose the run with the highest hold out conditional log likelihood (see [Model Choice](#model-choice)).
+
+
+## References
+
+[1]: Lazaridis, Iosif, et al. "Genomic insights into the origin of farming in the ancient Near East." Nature 536.7617 (2016): 419.
 
