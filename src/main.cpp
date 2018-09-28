@@ -47,7 +47,6 @@ using std::vector;
 
 string VERSION = "v1.0.0";
 
-
 void print_help()
 {
     cerr << "Program: dystruct (Dynamic Structure)" << endl;
