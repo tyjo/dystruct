@@ -174,9 +174,6 @@ We recommend LD pruning using [Plink](https://www.cog-genomics.org/plink2) follo
 ### Plotting
 Dystruct provides a script (`supp/scripts/plot_Q.py`) to plot stacked bar plots while matching colors across runs. Documentation for plotting can be found under `supp/scripts/README.md`.
 
-### Local Optima
-Dystruct can sometimes to converge to a local optima. This often appears as ancient samples with the same culture appearing as two separate groups. In this case, it is recommended to re-run Dystruct when this occurs, and choose the run with the highest hold out conditional log likelihood (see [Model Choice](#model-choice)).
-
 
 ## References
 
