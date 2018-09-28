@@ -21,6 +21,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
+import os.path
+import seaborn as sns
 import scipy.cluster.hierarchy
 import scipy.cluster.vq
 import scipy.stats
@@ -55,18 +57,23 @@ def match_Q(Q, K, matchQ_path):
     # find the lowest contiguous value of K to
     # begin matching colors
     min_k = K
-    for k in range(K, 1, -1):
+
+    if os.path.isfile(matchQ_path + "/Q" + str(K)):
+        start_K = K
+    else:
+        start_K = K-1
+
+    for k in range(start_K, 1, -1):
         try:
             Qmin = np.genfromtxt(matchQ_path + "/Q" + str(k))
             min_k = k
         except:
-            print("here")
             break
-    print("matching colors from K =", min_k, "to", K)
+    print("matching colors from K =", min_k, "to", start_K)
 
     # sequentially match columns for each value of Q
     Qprv = np.genfromtxt(matchQ_path + "/Q" + str(min_k))
-    for i in range(min_k, K+1):
+    for i in range(min_k, start_K+1):
         Qnxt = np.genfromtxt(matchQ_path + "/Q" + str(i))
         order = match_one_Q(Qnxt, Qprv)
         Qnxt = Qnxt[:,order]
@@ -76,7 +83,7 @@ def match_Q(Q, K, matchQ_path):
     return Q
 
 
-def plot_k(Q, labels, order, fontsize, spacing):
+def plot_k(Q, labels, order, fontsize, spacing, width, height):
     z = np.zeros(Q.shape[1])
     groups = [ [z for i in range(spacing)] for pop in order ]
     labels_grouped = [ ["" for i in range(spacing)] for pop in order]
@@ -85,8 +92,8 @@ def plot_k(Q, labels, order, fontsize, spacing):
         labels_grouped[order.index(label)].append(label)
 
     for idx,group in enumerate(groups):
-        group_z = group[:7]
-        group_r = group[7:]
+        group_z = group[:spacing]
+        group_r = group[spacing:]
         if len(group_r) <= 1:
             continue
 
@@ -113,7 +120,7 @@ def plot_k(Q, labels, order, fontsize, spacing):
             else:
                 prev_label = label
             labels_ordered.append(label)
-    Q = np.zeros((Q.shape[0] + 7*len(groups), Q.shape[1]))
+    Q = np.zeros((Q.shape[0] + spacing*len(groups), Q.shape[1]))
     idx = 0
     for g in groups:
         for m in g:
@@ -125,16 +132,38 @@ def plot_k(Q, labels, order, fontsize, spacing):
     plt.figure()
     fig, ax = plt.subplots(nrows=1, ncols=1)
 
-    m = matplotlib.cm.get_cmap("tab20")
-    colors = [m(9*i % 20) for i in range(20)]
+    #m = matplotlib.cm.get_cmap("tab20")
+    #m = [m(0),  m(1), m(2),   m(3),  m(4), 
+    #     m(7), 
+    #     m(10), m(11), m(14), 
+    #     m(15), m(16), m(17), m(18), m(19)]
+    ##np.random.seed(18327)
+    ##np.random.seed(3)
+    #np.random.seed(12696)
+    #order = [i for i in range(len(m))]
+    #order = np.random.permutation(order)
+    #print(order)
+    #colors = [m[order[i]] for i in range(14)]
+
+    m1 = matplotlib.cm.get_cmap("tab20c")
+    m2 = matplotlib.cm.get_cmap("tab20")
+    m3 = matplotlib.cm.get_cmap("tab20b")
+    colors = [
+      m1(0),  m2(18),  m2(7),  m1(14), m1(9),
+      m3(18), m2(10),  m1(18), m1(11), m3(10),
+      m1(8),  m2(17),  m2(11), m1(13), m2(19),
+      m1(16), m1(12),  m1(4)
+    ]
+
+
     ancestry_matrix = pd.DataFrame(ancestry_matrix)
-    ancestry_matrix.plot.bar(ax=ax, stacked=True, legend=False, width=1, linewidth=0.01, figsize=(25,5), color=colors)#colormap=matplotlib.cm.get_cmap("tab20"))
+    ancestry_matrix.plot.bar(ax=ax, stacked=True, legend=False, width=1, linewidth=0.01, figsize=(width,height), color=colors)#colormap=matplotlib.cm.get_cmap("tab20"))
 
     ax.set_yticklabels([])
     ax.set_xticklabels(labels_ordered, fontsize=fontsize)#, rotation=45)
     ax.tick_params(axis=u'both', which=u'both',length=0)
-    ax.patch.set_visible(False)
-    fig.patch.set_visible(False)
+    #ax.patch.set_visible(False)
+    #fig.patch.set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
@@ -142,7 +171,7 @@ def plot_k(Q, labels, order, fontsize, spacing):
     plt.tight_layout()
 
     k = Q.shape[1]
-    plt.savefig("dystruct_k" + str(k) + ".png", transparent=True, dpi=1000, pad_inches=0)
+    plt.savefig("dystruct_k" + str(k) + ".png", transparent=False, dpi=1000, pad_inches=0)
     plt.close()
 
 
@@ -158,6 +187,8 @@ if __name__ == "__main__":
     parser.add_argument("--subset",   type=str, default=None,  help="List of a subset of populations (one per line) from pop order to plot.")
     parser.add_argument("--fontsize", type=int, default=6,     help="Size of population labels.")
     parser.add_argument("--spacing",  type=int, default=7,     help="Size of spaces between populations.")
+    parser.add_argument("--width",    type=int, default=25,    help="Figure width")
+    parser.add_argument("--height",   type=int, default=5,     help="Figure height")
     args = parser.parse_args()
 
     path = args.filepath
@@ -167,6 +198,8 @@ if __name__ == "__main__":
     subset = args.subset
     fontsize = args.fontsize
     spacing = args.spacing
+    width = args.width
+    height = args.height
 
     Q = np.genfromtxt(path)
     K = Q.shape[1]
@@ -197,7 +230,8 @@ if __name__ == "__main__":
         poporder = subset
         Q = Q[subids]
 
-    plot_k(Q, samplelabels, poporder, fontsize, spacing)
+    print(Q.shape)
+    plot_k(Q, samplelabels, poporder, fontsize, spacing, width, height)
 
 
 
