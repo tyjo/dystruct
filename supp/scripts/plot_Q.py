@@ -114,11 +114,16 @@ def plot_k(Q, labels, order, fontsize, spacing, width, height):
     labels_ordered = []
     prev_label = "-1"
     for group in labels_grouped:
+        start_idx = np.argwhere(np.array(group) != '')[0]
+        start_idx = int(start_idx)
+        length = len(group[start_idx:])
+        mid = max(int(length / 2) - 1, 0)
+        group = ['' if i != mid + start_idx else g for i,g in enumerate(group) ]
         for label in group:
-            if label == prev_label:
-                label = ""
-            else:
-                prev_label = label
+            #if label == prev_label:
+            #    label = ""
+            #else:
+            #    prev_label = label
             labels_ordered.append(label)
     Q = np.zeros((Q.shape[0] + spacing*len(groups), Q.shape[1]))
     idx = 0
@@ -185,10 +190,10 @@ if __name__ == "__main__":
     parser.add_argument("--match-Q",  type=str,  default=None, help="Match colors across K. The argument to --match-Q is a path to a folder" +
                                                                    " of Q matrices, each named Qk for each value of K.")
     parser.add_argument("--subset",   type=str, default=None,  help="List of a subset of populations (one per line) from pop order to plot.")
-    parser.add_argument("--fontsize", type=int, default=6,     help="Size of population labels.")
-    parser.add_argument("--spacing",  type=int, default=7,     help="Size of spaces between populations.")
-    parser.add_argument("--width",    type=int, default=25,    help="Figure width")
-    parser.add_argument("--height",   type=int, default=5,     help="Figure height")
+    parser.add_argument("--fontsize", type=float, default=4,     help="Size of population labels.")
+    parser.add_argument("--spacing",  type=int, default=2,     help="Size of spaces between populations.")
+    parser.add_argument("--width",    type=int, default=5,    help="Figure width")
+    parser.add_argument("--height",   type=int, default=2,     help="Figure height")
     args = parser.parse_args()
 
     path = args.filepath
