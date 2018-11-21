@@ -64,6 +64,12 @@ make
 ./run.sh
 ```
 
+If you installed gcc6 per the above instructions, replace the third line with
+
+```
+make CC=g++-6
+```
+
 
 ## Running Dystruct
 
