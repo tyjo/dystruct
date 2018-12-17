@@ -70,8 +70,9 @@ SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double 
             t = tdist(gen);
             boost::random::uniform_int_distribution<int> idist(0, (*snps)[t].size() - 1);
             individual = idist(gen);
-            picked.insert(draw);
+            draw = ldist(gen);
         }
+        picked.insert(draw);
 
         if (ho.find(t) == ho.end()) {
             ho[t] = vector<vector<int> >();
