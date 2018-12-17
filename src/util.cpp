@@ -116,6 +116,7 @@ int check_input_file(string fname, int nloci, int n_columns)
         iss = istringstream(line);
         col_count = 0;
 
+        int nonmissing = 0;
         while (iss >> c[0]) {
             g = atoi(c);
             col_count++;
@@ -126,12 +127,26 @@ int check_input_file(string fname, int nloci, int n_columns)
                 cerr << "Genotypes must be 0, 1, or 2 if known, 9 if missing or unknown." << endl;
                 exit(1);
             }
+
+            if (g == 0 || g == 1 || g == 2) {
+                nonmissing += 1;
+            }
         }
 
         if (col_count != n_columns) {
             cerr << "Input Error (" << fname << "): line " << locus_count << " has "
                  << col_count << " samples, but generation file has " << n_columns << "." << endl;
             exit(1);
+        }
+
+        if (nonmissing == 0) {
+            cerr << "Input Warning (" << fname << "): line " << locus_count 
+                 << " has no nonmissing entries" << endl;
+        }
+
+        if (nonmissing == 1) {
+            cerr << "Input Warning (" << fname << "): line " << locus_count 
+                 << " only has 1 nonmissing entry" << endl;
         }
     }
 

@@ -45,7 +45,7 @@ using std::setprecision;
 using std::string;
 using std::vector;
 
-string VERSION = "v1.0.0";
+string VERSION = "v1.0.1";
 
 void print_help()
 {
@@ -212,7 +212,7 @@ int main(int argc, char* const argv[])
         cerr << "proportion of held out sites must be between in [0, 1)" << endl;
         return 1;
     }
-    else if (epochs < 0) {
+    else if (epochs <= 0) {
         cerr << "--epochs must be greater than 0" << endl;
         return 1;
     }

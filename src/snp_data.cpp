@@ -58,12 +58,6 @@ SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double 
         // pick a SNP location
         int draw = ldist(gen);
 
-        // make sure we don't pick the same location twice
-        while (picked.find(draw) != picked.end()) {
-            draw = ldist(gen);
-        }
-        picked.insert(draw);
-
         // pick a time
         int t = tdist(gen);;
 
@@ -71,11 +65,12 @@ SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double 
         boost::random::uniform_int_distribution<int> idist(0, (*snps)[t].size() - 1);
         int individual = idist(gen);
 
-        // make sure we have data
-        while (missing(t, individual, draw)) {
+        // make sure we have data and that we have not already picked this locus
+        while (missing(t, individual, draw) or picked.find(draw) != picked.end()) {
             t = tdist(gen);
             boost::random::uniform_int_distribution<int> idist(0, (*snps)[t].size() - 1);
             individual = idist(gen);
+            picked.insert(draw);
         }
 
         if (ho.find(t) == ho.end()) {
