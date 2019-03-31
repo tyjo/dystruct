@@ -98,8 +98,14 @@ VariationalKalmanSmoother::VariationalKalmanSmoother(const SNPData& snp_data,
         sum_zeta[t] = 0;
         for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
             if (snp_data.hidden(t, d, locus)) continue;
-            sum_phi[t] += snp_data.genotype(t, d, locus) * phi[t][d][pop];
-            sum_zeta[t] += (2 - snp_data.genotype(t, d, locus)) * zeta[t][d][pop];
+            if (snp_data.hemizygous(t, d)) {
+                sum_phi[t] += 0.5*snp_data.genotype(t, d, locus) * phi[t][d][pop];
+                sum_zeta[t] += 0.5*(2 - snp_data.genotype(t, d, locus)) * zeta[t][d][pop];
+            }
+            else {
+                sum_phi[t] += snp_data.genotype(t, d, locus) * phi[t][d][pop];
+                sum_zeta[t] += (2 - snp_data.genotype(t, d, locus)) * zeta[t][d][pop];
+            }
         }
     }
 }

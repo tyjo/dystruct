@@ -90,6 +90,20 @@ SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double 
 
     // check
     assert(count == nlocations);
+
+    // check if individual is hemizygous
+    for (size_t t = 0; t < (*snps).size(); ++t) {
+        hemi.push_back(vector<bool>());
+        for (size_t d = 0; d < (*snps)[t].size(); ++d) {
+            bool is_hemizygous = true;
+            for (size_t l = 0; l <  (*snps)[t][d].size(); ++l) {
+                if ((*snps)[t][d][l] == 1) {
+                    is_hemizygous = false;
+                }
+            }
+            hemi[t].push_back(is_hemizygous);
+        }
+    }
 }
 
 

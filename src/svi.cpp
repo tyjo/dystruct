@@ -90,6 +90,7 @@ SVI::SVI(int                       npops,
          int                       nepochs,
          map<int,pair<int, int> >  sample_map,
          vector2<int>              labels,
+         bool                      multi_init,
          bool                      using_labels) :
          npops(npops),
          nloci(nloci),
@@ -104,6 +105,7 @@ SVI::SVI(int                       npops,
          sample_iter(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]),
          nepochs(nepochs),
          sample_map(sample_map),
+         multi_init(multi_init),
          labels(labels)
 {   
     this->mixture_prior = mixture_prior;
@@ -176,6 +178,100 @@ void SVI::initialize_variational_parameters()
 }
 
 
+double SVI::compute_objective()
+{
+    double elbo = 0;
+    vector<double> var(nsteps);
+
+    double dt;
+    var[0] = 1. / (12*pop_size);
+    for (size_t t = 0; t < nsteps; ++t) {
+        if (t > 0) {
+            // store generation time
+            dt = snp_data.get_sample_gen(t) - snp_data.get_sample_gen(t-1);
+        
+            // compute state space variance
+            var[t] = dt / (12.*pop_size);
+        }
+    }
+
+    double m0;
+    double v0;
+    for (size_t l = 0; l < nloci; ++l) {
+        load_auxiliary_parameters(l);
+        update_allele_frequencies(l);
+
+        for (size_t t = 0; t < nsteps; ++t) {
+            // E[log p(beta^t | beta^t-1)] - E[log q(beta^t | beta^t-1)] 
+            for (size_t k = 0; k < npops; ++k) {
+                if (t == 0) {
+                    m0 = initial_freq[k][l];
+                    v0 = 0;
+                }
+                else {
+                    m0 = freqs[t-1][k][l][0];
+                    v0 = freqs[t-1][k][l][1];
+                }
+                elbo += -(0.5/var[t])*pow(freqs[t][k][l][0] - m0, 2) - 0.5*freqs[t][k][l][1]/var[t] - 0.5*v0/var[t];
+                elbo += 0.5*log(freqs[t][k][l][1]);
+            }
+
+            // E[log p(x | beta, theta)]
+            for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
+                double sum_theta = 0;
+                for (size_t k = 0; k < npops; ++k) {
+                    sum_theta += theta[t][d][k];
+                }
+
+                for (size_t k = 0; k < npops; ++k) {
+                    if (snp_data.hidden(t, d, l)) continue;
+
+                    double x = snp_data.genotype(t, d, l);
+
+                    if (snp_data.hemizygous(t, d)) {
+                        elbo += 0.5*x*( digamma(theta[t][d][k]) - digamma(sum_theta) 
+                                    + log(freqs[t][k][l][0]) - 0.5*freqs[t][k][l][1]/pow(freqs[t][k][l][0], 2) 
+                                    - log(phi[t][d][k])
+                                   )*phi[t][d][k];
+                        elbo += 0.5*(2-x)*( digamma(theta[t][d][k]) - digamma(sum_theta) 
+                                        + log(1 - freqs[t][k][l][0])
+                                        - log(zeta[t][d][k])
+                                      )*zeta[t][d][k];
+                    }
+                    else {
+                        elbo += x*( digamma(theta[t][d][k]) - digamma(sum_theta) 
+                                    + log(freqs[t][k][l][0]) - 0.5*freqs[t][k][l][1]/pow(freqs[t][k][l][0], 2) 
+                                    - log(phi[t][d][k])
+                                   )*phi[t][d][k];
+                        elbo += (2-x)*( digamma(theta[t][d][k]) - digamma(sum_theta) 
+                                        + log(1 - freqs[t][k][l][0])
+                                        - log(zeta[t][d][k])
+                                      )*zeta[t][d][k];
+                    }
+                }
+            }
+        }
+    }
+
+    // E[log p(theta)] - E[log q(theta)]
+    for (size_t t = 0; t < nsteps; ++t) {
+        for (size_t d = 0; d < snp_data.total_individuals(t); ++d) {
+            double sum_theta = 0;
+            for (size_t k = 0; k < npops; ++k) {
+                sum_theta += theta[t][d][k];
+            }
+
+            for (size_t k = 0; k < npops; ++k) {
+                elbo += (mixture_prior[k] - 1)*(digamma(theta[t][d][k]) - digamma(sum_theta));
+                elbo -= (theta[t][d][k] - 1)*(digamma(theta[t][d][k]) - digamma(sum_theta)) - lgamma(theta[t][d][k]);
+            }
+            elbo -= lgamma(sum_theta);
+        }
+    }
+
+    return elbo;
+}
+
 
 double SVI::compute_ho_log_likelihood()
 {
@@ -202,8 +298,13 @@ double SVI::compute_ho_log_likelihood()
                 if (p >= 1) p = 0.999;
                 else if (p == 0) p = 0.001;
 
-                double m = max(snp_data.genotype(t,d,l), 2 - snp_data.genotype(t,d,l));
-                log_lk += log(2.0) -  log(m) + snp_data.genotype(t,d,l)*log(p) + (2 - snp_data.genotype(t,d,l))*log(1-p);
+                if (snp_data.hemizygous(t, d)) {
+                    log_lk += 0.5*(snp_data.genotype(t,d,l)*log(p) + (2 - snp_data.genotype(t,d,l))*log(1-p));
+                }
+                else {
+                    double m = max(snp_data.genotype(t,d,l), 2 - snp_data.genotype(t,d,l));
+                    log_lk += log(2.0) - log(m) + snp_data.genotype(t,d,l)*log(p) + (2 - snp_data.genotype(t,d,l))*log(1-p);
+                }
             }
         }
     }
@@ -330,8 +431,15 @@ void SVI::update_mixture_proportions(int locus)
 
                 step_size = pow(sample_iter[t][d] + 1, step_power);
                 
-                update += snp_data.genotype(t, d, l)*phi[t][d][k] 
-                                + (2 - snp_data.genotype(t, d, l))*zeta[t][d][k];
+                if (snp_data.hemizygous(t, d)) {
+                    update += 0.5*snp_data.genotype(t, d, l)*phi[t][d][k] 
+                                    + 0.5*(2 - snp_data.genotype(t, d, l))*zeta[t][d][k];
+                }
+                else {
+                    update += snp_data.genotype(t, d, l)*phi[t][d][k] 
+                                    + (2 - snp_data.genotype(t, d, l))*zeta[t][d][k];
+                }
+                
                 theta[t][d][k] += step_size * (mixture_prior[k] + 
                                                nloci_indv[t][d] * update -
                                                theta[t][d][k]
@@ -343,23 +451,76 @@ void SVI::update_mixture_proportions(int locus)
 }
 
 
+void SVI::find_best_initialization()
+{
+    cout << "trying 5 initializations..." << endl;
+    vector3<double> best_theta(theta);
+    vector3<double> best_pseudo_outputs(pseudo_outputs);
+    vector4<double> best_freqs(freqs);
+    vector2<double> best_initial_freq(initial_freq);
+    vector2<int>    best_sample_iter(sample_iter);
+
+    uniform_int_distribution<int> idist(0, nloci - 1);
+    int ntries = 5;
+    double best_obj = 0;
+    bool converged = false;
+    double obj = 0;
+    int locus;
+    for (int n = 0; n < ntries; ++n) {
+        for (size_t it = 0; it < nloci; ++it) {
+            locus = idist(gen);
+            converged = false;
+            while (!converged) {
+                converged = update_auxiliary_parameters(locus);
+                update_allele_frequencies(locus);
+            }
+            update_mixture_proportions(locus);
+        }
+
+        obj = compute_objective();
+        cout << "\tinit " << n+1 << ":\t" << obj << endl;
+
+        if (obj > best_obj || best_obj == 0) {
+            best_theta = theta;
+            best_pseudo_outputs = pseudo_outputs;
+            best_freqs = freqs;
+            best_initial_freq = initial_freq;
+            best_sample_iter = sample_iter;
+        }
+        initialize_variational_parameters();
+    }
+
+    theta = best_theta;
+    pseudo_outputs = best_pseudo_outputs;
+    freqs = best_freqs;
+    initial_freq = best_initial_freq;
+    sample_iter = best_sample_iter;
+}
+
+
 void SVI::run_stochastic()
 {
     int          locus = 0;
     unsigned int it    = 0;
     int epoch          = 0;
-    double ss          = 1;
+    //double ss          = 1;
     bool   converged   = false;
+    double prv_obj     = 1;
+    double obj         = 0;
 
-    vector3<double> prev_theta = theta;
     uniform_int_distribution<int> idist(0, nloci - 1);
 
+    if (multi_init) {
+        find_best_initialization();
+    } 
+    cout << "running main algorithm..." << endl;
 
-    while (epoch < nepochs) {
+    //while (epoch < nepochs) {
+    while ( (obj > prv_obj && abs(obj - prv_obj > 1)) || epoch < 25) {
         it++;
         epoch = (int)(it/nloci);
         locus = idist(gen);
-        ss = pow(it + 1, step_power);
+        //ss = pow(it + 1, step_power);
 
         converged = false;
         while (!converged) {
@@ -368,20 +529,37 @@ void SVI::run_stochastic()
         }
         update_mixture_proportions(locus);
 
-        if (it % 1000 == 0 || it == 1) {
-            prev_theta = theta;
-            cout << "it:\t" << it << setw(12);
-            cout << scientific << setprecision(3) << "\tstep size:\t" << ss << endl;
-        }
+        // if (it == 1000) {
+        //     cout << "it:\t" << it << endl;
+        //     write_temp("-it1000");
+        // }
 
-        if (it % nloci == 0) {
-            write_temp();
-            cout << setprecision(5);
-            cout << "\tepoch:\t" << epoch << "\thold out conditional log likelihood:\t" << compute_ho_log_likelihood() << endl;
+        // if (it % 10000 == 0 || it == 1) {
+        //     //prev_theta = theta;
+        //     cout << "it:\t" << it << endl;
+        //     //cout << scientific << setprecision(3) << "\tstep size:\t" << ss << endl;
+        //     //cout << scientific << setprecision(20) << "\tobj:\t" << compute_objective() << endl;
+        //     //write_temp("-init");
+        // }
+
+        if (it % (nloci) == 0) {
+            write_temp("-epoch" + std::to_string(epoch));
+            cout << setprecision(10);
+            cout << "\tepoch:\t" << epoch;
+            if (it % 10*(nloci) == 0) {
+                prv_obj = obj;
+                obj = compute_objective();
+                cout << "\tobjective:\t" << obj;
+            }
+            cout << endl;
         }
     }
-    cout << setprecision(5);
-    cout << "hold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
+    cout << setprecision(10);
+    cout << "objective:\t" << compute_objective() << endl;
+
+    if (snp_data.has_hold_out()) {
+        cout << "hold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
+    }
 }
 
 
@@ -419,9 +597,9 @@ void SVI::write_results(string out_file)
 
 
 
-void SVI::write_temp()
+void SVI::write_temp(string suffix = "")
 {
-    ofstream out_theta("temp_theta");
+    ofstream out_theta("temp_theta" + suffix);
     for (int i = 0; i < nindv; ++i) {
         int t = sample_map[i].first;
         int d = sample_map[i].second;

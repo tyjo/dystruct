@@ -176,7 +176,7 @@ def plot_k(Q, labels, order, fontsize, spacing, width, height):
     plt.tight_layout()
 
     k = Q.shape[1]
-    plt.savefig("dystruct_k" + str(k) + ".png", transparent=False, dpi=1000, pad_inches=0)
+    plt.savefig("dystruct_k" + str(k) + ".pdf", transparent=False, dpi=1000, pad_inches=0)
     plt.close()
 
 

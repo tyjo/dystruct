@@ -35,7 +35,7 @@ class SNPData
 {
     public:
         SNPData() { };
-        SNPData(SNPData& d) : ho(d.ho), sample_gen(d.sample_gen) { this->snps = d.snps; }
+        SNPData(SNPData& d) : ho(d.ho), sample_gen(d.sample_gen), hemi(d.hemi) { this->snps = d.snps; }
         SNPData(const std_vector3<short> *snps, std::vector<int> sample_gen, double hold_out_proportion, int hold_out_seed);
         size_t total_time_steps() const                                   { return (*snps).size(); }
         size_t total_individuals(size_t time) const                       { return (*snps)[time].size(); }
@@ -64,11 +64,16 @@ class SNPData
 
         bool   hidden(size_t time, size_t indiv, size_t locus) const      { return (missing(time, indiv, locus) || hold_out(time, indiv, locus)); }
 
+        bool   hemizygous(size_t time, size_t indiv) const  { return hemi[time][indiv]; }
+
+        bool   has_hold_out() { return ho.size() != 0; }
+
     private:
         typedef std::vector<std::vector<int> >  matrix;
         const std_vector3<short>                *snps;         // the full SNP data set
         std::map<int, matrix>                   ho;            // 
         std::vector<int>                        sample_gen;    // sample_gen[t] gives the generation number corresponding to time step t.
+        std::vector<std::vector<bool> >         hemi;          // hemi[t][d] is true if individual is hemizygous
 };
 
 #endif

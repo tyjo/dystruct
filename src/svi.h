@@ -43,6 +43,7 @@ class SVI
         int                                 nepochs,
         std::map<int,std::pair<int, int> >  sample_map,
         vector2<int>                        labels,
+        bool                                multi_init,
         bool                                using_labels = false);
 
     // Stochastic variational inference
@@ -54,6 +55,7 @@ class SVI
 
     // Computes the log likelihood on a hold out set
     double compute_ho_log_likelihood();
+    double compute_objective();
 
     void   write_results(std::string out_file);
 
@@ -84,11 +86,13 @@ class SVI
     double                              step_power = -0.55;
     std::map<int,std::pair<int, int> >  sample_map;     // map from original row in SNP matrix to row in ancestry proportions
     bool                                using_labels = false;
+    bool                                multi_init;
     
     inline void   update_auxiliary_local(size_t t, size_t d, size_t l);
     inline void   load_auxiliary_parameters(int l);
-    void   write_temp();
+    void   write_temp(std::string suffix);
     std::pair<bool, double>   check_theta_convergence(const vector3<double>& prev_theta);
+    void  find_best_initialization();
 };
 
 #endif

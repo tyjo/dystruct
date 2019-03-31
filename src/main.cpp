@@ -78,6 +78,7 @@ void print_help()
          << "                                    and training sets. Use the same seed across replicates to fix the hold" << endl
          << "                                    out set." << endl;
     cerr << "\t--epochs INT                " << "(=50) Optional. Number of epochs to run before terminating." << endl;
+    cerr << "\t--no-multi-init             " << "(=true) Optional. Turns off multiple initialization." << endl;
     /*cerr << "\t--labels FILE               " << "Optional. Experimental. Population label file path for supervised analysis." << endl 
          << "                                    Labels should be in {0,...,npops - 1}. One label per line in the same order" << endl
          << "                                    as the input matrix. Individuals without a population assignment should be" << endl
@@ -97,6 +98,7 @@ enum OPTIONS
     HOLD_OUT_FRACTION,
     HOLD_OUT_SEED,
     EPOCHS,
+    MULTI_INIT,
     LABELS
 };
 
@@ -113,6 +115,7 @@ static struct option long_options[] =
     {"hold-out-fraction" , required_argument, NULL, HOLD_OUT_FRACTION },
     {"hold-out-seed"     , required_argument, NULL, HOLD_OUT_SEED     },
     {"epochs"            , required_argument, NULL, EPOCHS            },
+    {"no-multi-init"     , no_argument, NULL, MULTI_INIT        },
     {"labels"            , required_argument, NULL, LABELS            },
     {NULL, no_argument, NULL, 0}
 };
@@ -138,6 +141,7 @@ int main(int argc, char* const argv[])
     double pop_size          = 0;
     int epochs               = 50;
     string label_file        = "";
+    bool multi_init          = true;
 
     int c;
     int option_index;
@@ -172,6 +176,9 @@ int main(int argc, char* const argv[])
                 break;
             case EPOCHS:
                 epochs = atoi(optarg);
+                break;
+            case MULTI_INIT:
+                multi_init = false;
                 break;
             case LABELS:
                 label_file = optarg;
@@ -238,10 +245,10 @@ int main(int argc, char* const argv[])
        theta_prior.push_back(1.0 / npop);
     }
 
-    cout << "initializing variational parameters..." << endl;
-    SVI svi(npop, theta_prior, pop_size, snp_data, gen, nloci, epochs, sample_map, labels, use_labels);
+    //cout << "initializing variational parameters..." << endl;
+    SVI svi(npop, theta_prior, pop_size, snp_data, gen, nloci, epochs, sample_map, labels, multi_init, use_labels);
 
-    cout << "running..." << endl;
+    //cout << "running..." << endl;
     svi.run_stochastic();
     svi.write_results(out_file);
 
