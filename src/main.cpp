@@ -77,7 +77,7 @@ void print_help()
     cerr << "\t--hold-out-seed INT         " << "(=28149) Optional. Random seed used to partition SNP data into hold out" << endl
          << "                                    and training sets. Use the same seed across replicates to fix the hold" << endl
          << "                                    out set." << endl;
-    cerr << "\t--epochs INT                " << "(=50) Optional. Number of epochs to run before terminating." << endl;
+    cerr << "\t--epochs INT                " << "(=100) Optional. Number of epochs to run before terminating." << endl;
     cerr << "\t--no-multi-init             " << "(=true) Optional. Turns off multiple initialization." << endl;
     /*cerr << "\t--labels FILE               " << "Optional. Experimental. Population label file path for supervised analysis." << endl 
          << "                                    Labels should be in {0,...,npops - 1}. One label per line in the same order" << endl
@@ -115,7 +115,7 @@ static struct option long_options[] =
     {"hold-out-fraction" , required_argument, NULL, HOLD_OUT_FRACTION },
     {"hold-out-seed"     , required_argument, NULL, HOLD_OUT_SEED     },
     {"epochs"            , required_argument, NULL, EPOCHS            },
-    {"no-multi-init"     , no_argument, NULL, MULTI_INIT        },
+    {"no-multi-init"     , no_argument      , NULL, MULTI_INIT        },
     {"labels"            , required_argument, NULL, LABELS            },
     {NULL, no_argument, NULL, 0}
 };
@@ -139,7 +139,7 @@ int main(int argc, char* const argv[])
     int nloci                = 0;
     double hold_out_fraction = 0;
     double pop_size          = 0;
-    int epochs               = 50;
+    int epochs               = 100;
     string label_file        = "";
     bool multi_init          = true;
 

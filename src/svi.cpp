@@ -515,8 +515,8 @@ void SVI::run_stochastic()
     } 
     cout << "running main algorithm..." << endl;
 
-    //while (epoch < nepochs) {
-    while ( (obj > prv_obj && abs(obj - prv_obj > 1)) || epoch < 25) {
+    while (epoch < nepochs) {
+    //while ( (obj > prv_obj && abs(obj - prv_obj > 1)) || epoch < 25) {
         it++;
         epoch = (int)(it/nloci);
         locus = idist(gen);
