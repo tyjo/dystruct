@@ -139,7 +139,7 @@ int main(int argc, char* const argv[])
     int nloci                = 0;
     double hold_out_fraction = 0;
     double pop_size          = 0;
-    int epochs               = 100;
+    int epochs               = 50;
     string label_file        = "";
     bool multi_init          = true;
 
