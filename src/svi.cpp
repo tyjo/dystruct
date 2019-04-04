@@ -543,7 +543,7 @@ void SVI::run_stochastic()
         // }
 
         if (it % (nloci) == 0) {
-            write_temp("-epoch" + std::to_string(epoch));
+            //write_temp("-epoch" + std::to_string(epoch));
             cout << setprecision(10);
             cout << "\tepoch:\t" << epoch;
             //cout << "\thold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
