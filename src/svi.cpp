@@ -547,11 +547,11 @@ void SVI::run_stochastic()
             cout << setprecision(10);
             cout << "\tepoch:\t" << epoch;
             //cout << "\thold out log likelihood:\t" << compute_ho_log_likelihood() << endl;
-            if (it % (10*nloci) == 0) {
-                prv_obj = obj;
-                obj = compute_objective();
-                cout << "\tobjective:\t" << obj;
-            }
+            // if (it % (10*nloci) == 0) {
+            //     prv_obj = obj;
+            //     obj = compute_objective();
+            //     cout << "\tobjective:\t" << obj;
+            // }
             cout << endl;
         }
     }
