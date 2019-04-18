@@ -56,7 +56,6 @@ void print_help()
     cerr << "Usage:   dystruct [options]" << endl;
     cerr << endl;
     cerr << "Required Arguments:" << endl;
-    cerr << "\t-h, --help                  " << "Print this help message." << endl;
     cerr << "\t--input FILE                " << "Path to genotype matrix: a LOCI x INDIVIDUAL matrix of genotypes in the" << endl
          << "                                    EIGENSTRAT genotype format. Each genotype is denoted by either 0, 1, 2, or 9," << endl
          << "                                    where 9 identifies missing entries. There are no spaces between entries." << endl
@@ -67,18 +66,21 @@ void print_help()
     cerr << "                                    order as the columns of the input matrix." << endl; 
     cerr << "\t--output STR                " << "A prefix for output files." << endl;
     cerr << "\t--npops INT                 " << "Number of populations." << endl;
-    cerr << "\t--nloci INT                 " << "Number of loci. This should match the number of loci in the input file." << endl;
-    cerr << "\t--pop-size INT              " << "Effective population size for all populations." << endl;
+    cerr << "\t--nloci INT                 " << "Number of loci. This should match the number of loci in the input file. Used" << endl;
+    cerr << "                                    to to perform sanity checks on input files." << endl;
     cerr << "\t--seed INT                  " << "Random seed used to initialize variational parameters" << endl;
     cerr << endl;
     cerr << "Optional Arguments:" << endl;
-    cerr << "\t--hold-out-fraction DOUBLE  " << "(=0) Optional. Partitions nloci * hold_out_fraction loci into a hold out" << endl
-         << "                                    set. The hold out set contains at most one individual per site." << endl;
+    cerr << "\t-h, --help                  " << "Print this help message." << endl;
+    cerr << "\t--pop-size INT              " << "(=10000). Effective population size for all populations." << endl;
+    cerr << "\t--hold-out-fraction DOUBLE  " << "(=0) Optional. Partitions nloci * hold_out_fraction genotypes into a hold out" << endl
+         << "                                    set." << endl;
     cerr << "\t--hold-out-seed INT         " << "(=28149) Optional. Random seed used to partition SNP data into hold out" << endl
          << "                                    and training sets. Use the same seed across replicates to fix the hold" << endl
          << "                                    out set." << endl;
     cerr << "\t--epochs INT                " << "(=50) Optional. Number of epochs to run before terminating." << endl;
-    cerr << "\t--no-multi-init             " << "(=true) Optional. Turns off multiple initialization." << endl;
+    cerr << "\t--no-multi-init             " << "(=false) Optional. Turns off multiple initialization." << endl;
+    cerr << "\t--no-pseudo-haploid         " << "(=false) Optional. If set, treats pseudo haploid individuals as diploid." << endl;
     /*cerr << "\t--labels FILE               " << "Optional. Experimental. Population label file path for supervised analysis." << endl 
          << "                                    Labels should be in {0,...,npops - 1}. One label per line in the same order" << endl
          << "                                    as the input matrix. Individuals without a population assignment should be" << endl
@@ -99,6 +101,7 @@ enum OPTIONS
     HOLD_OUT_SEED,
     EPOCHS,
     MULTI_INIT,
+    PSUEDO_HAPLOID,
     LABELS
 };
 
@@ -116,6 +119,7 @@ static struct option long_options[] =
     {"hold-out-seed"     , required_argument, NULL, HOLD_OUT_SEED     },
     {"epochs"            , required_argument, NULL, EPOCHS            },
     {"no-multi-init"     , no_argument      , NULL, MULTI_INIT        },
+    {"no-pseudo-haploid" , no_argument      , NULL, PSUEDO_HAPLOID    },
     {"labels"            , required_argument, NULL, LABELS            },
     {NULL, no_argument, NULL, 0}
 };
@@ -138,10 +142,11 @@ int main(int argc, char* const argv[])
     int npop                 = 0;
     int nloci                = 0;
     double hold_out_fraction = 0;
-    double pop_size          = 0;
+    double pop_size          = 10000;
     int epochs               = 50;
     string label_file        = "";
     bool multi_init          = true;
+    bool pseudo_haploid      = true;
 
     int c;
     int option_index;
@@ -176,6 +181,9 @@ int main(int argc, char* const argv[])
                 break;
             case EPOCHS:
                 epochs = atoi(optarg);
+                break;
+            case PSUEDO_HAPLOID:
+                pseudo_haploid = false;
                 break;
             case MULTI_INIT:
                 multi_init = false;
@@ -232,7 +240,7 @@ int main(int argc, char* const argv[])
     map<int, pair<int, int> > sample_map = read_snp_matrix(in_file, in_gen_times_file, snps, gen_sampled, nloci);
     if (hold_out_fraction > 0)
         cout << "constructing hold out set..." << endl;
-    SNPData snp_data(snps, gen_sampled, hold_out_fraction, hold_out_seed);
+    SNPData snp_data(snps, gen_sampled, hold_out_fraction, hold_out_seed, pseudo_haploid);
     vector2<int> labels(boost::extents[snp_data.total_time_steps()][snp_data.max_individuals()]);
     bool use_labels = false;
     if (label_file != "") {

@@ -112,7 +112,8 @@ Optional Arguments:
                                     and training sets. Use the same seed across replicates to fix the hold
                                     out set.
 	--epochs INT                (=50) Optional. Number of epochs to run before terminating.
-```
+	--no-multi-init             (=false) Optional. Turns off multiple initialization.
+	--no-pseudo-haploid         (=false) Optional. If set, treats pseudo haploid individuals as diploid.```
 
 
 ### Parallel Computation
