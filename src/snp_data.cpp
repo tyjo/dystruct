@@ -31,7 +31,7 @@ using std::pair;
 using std::map;
 using std::vector;
 
-SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double hold_out_proportion, int hold_out_seed)
+SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double hold_out_proportion, int hold_out_seed, bool pseudo_haploid)
     : sample_gen(sample_gen)
 {
     // fixing the random seed will fix the hold out set across runs
@@ -91,11 +91,11 @@ SNPData::SNPData(const std_vector3<short> *snps, vector<int> sample_gen, double 
     // check
     assert(count == nlocations);
 
-    // check if individual is hemizygous
+    // check if individual is hemizygous / pseudo haploid
     for (size_t t = 0; t < (*snps).size(); ++t) {
         hemi.push_back(vector<bool>());
         for (size_t d = 0; d < (*snps)[t].size(); ++d) {
-            bool is_hemizygous = true;
+            bool is_hemizygous = pseudo_haploid;
             for (size_t l = 0; l <  (*snps)[t][d].size(); ++l) {
                 if ((*snps)[t][d][l] == 1) {
                     is_hemizygous = false;

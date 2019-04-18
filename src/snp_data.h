@@ -36,7 +36,7 @@ class SNPData
     public:
         SNPData() { };
         SNPData(SNPData& d) : ho(d.ho), sample_gen(d.sample_gen), hemi(d.hemi) { this->snps = d.snps; }
-        SNPData(const std_vector3<short> *snps, std::vector<int> sample_gen, double hold_out_proportion, int hold_out_seed);
+        SNPData(const std_vector3<short> *snps, std::vector<int> sample_gen, double hold_out_proportion, int hold_out_seed, bool pseudo_haploid );
         size_t total_time_steps() const                                   { return (*snps).size(); }
         size_t total_individuals(size_t time) const                       { return (*snps)[time].size(); }
         // total loci for individual indiv sampled at time t
