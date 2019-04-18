@@ -1,6 +1,6 @@
-# Dystruct (Dynamic structure)
+# DyStruct (Dynamic Structure)
 
-**Current Version**: v1.0.0 (September 2018)
+**Current Version**: v1.1.0 (April 2019)
   
 #### What's New In v1.0.0
 
