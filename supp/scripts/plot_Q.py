@@ -83,7 +83,7 @@ def match_Q(Q, K, matchQ_path):
     return Q
 
 
-def plot_k(Q, labels, order, fontsize, spacing, width, height):
+def plot_k(Q, labels, order, fontsize, spacing, width, height, bar_width, png):
     z = np.zeros(Q.shape[1])
     groups = [ [z for i in range(spacing)] for pop in order ]
     labels_grouped = [ ["" for i in range(spacing)] for pop in order]
@@ -162,7 +162,7 @@ def plot_k(Q, labels, order, fontsize, spacing, width, height):
 
 
     ancestry_matrix = pd.DataFrame(ancestry_matrix)
-    ancestry_matrix.plot.bar(ax=ax, stacked=True, legend=False, width=1, linewidth=0.01, figsize=(width,height), color=colors)#colormap=matplotlib.cm.get_cmap("tab20"))
+    ancestry_matrix.plot.bar(ax=ax, stacked=True, legend=False, width=bar_width, linewidth=0.01, figsize=(width,height), color=colors)#colormap=matplotlib.cm.get_cmap("tab20"))
 
     ax.set_yticklabels([])
     ax.set_xticklabels(labels_ordered, fontsize=fontsize)#, rotation=45)
@@ -176,7 +176,10 @@ def plot_k(Q, labels, order, fontsize, spacing, width, height):
     plt.tight_layout()
 
     k = Q.shape[1]
-    plt.savefig("dystruct_k" + str(k) + ".pdf", transparent=False, dpi=1000, pad_inches=0)
+    if png:
+        plt.savefig("dystruct_k" + str(k) + ".png", transparent=True, dpi=1000, pad_inches=0)
+    else:
+        plt.savefig("dystruct_k" + str(k) + ".pdf", transparent=False, dpi=1000, pad_inches=0)
     plt.close()
 
 
@@ -194,6 +197,8 @@ if __name__ == "__main__":
     parser.add_argument("--spacing",  type=int, default=2,     help="Size of spaces between populations.")
     parser.add_argument("--width",    type=int, default=5,    help="Figure width")
     parser.add_argument("--height",   type=int, default=2,     help="Figure height")
+    parser.add_argument("--png",      default=False, action="store_true", help="output png instead of pdf")
+    parser.add_argument("--bar-width", type=int, default=1, help="width of ancestry bars")
     args = parser.parse_args()
 
     path = args.filepath
@@ -205,6 +210,8 @@ if __name__ == "__main__":
     spacing = args.spacing
     width = args.width
     height = args.height
+    png = args.png
+    bar_width = args.bar_width
 
     Q = np.genfromtxt(path)
     K = Q.shape[1]
@@ -236,7 +243,7 @@ if __name__ == "__main__":
         Q = Q[subids]
 
     print(Q.shape)
-    plot_k(Q, samplelabels, poporder, fontsize, spacing, width, height)
+    plot_k(Q, samplelabels, poporder, fontsize, spacing, width, height, bar_width, png)
 
 
 
