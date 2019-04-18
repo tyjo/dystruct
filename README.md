@@ -25,12 +25,11 @@
    * [LD-Pruning](#ld-pruning)
 5. [Interpreting Results](#interpreting-results)
    * [Plotting](#plotting)
-   * [Local Optima](#local-optima)
 
 ## Introduction
 DyStruct (Dynamic Structure) is a model-based approach for inferring shared genetic ancestry in individuals sampled over time. DyStruct's input is a genotype matrix, sample times for each individual, and the number of putative ancestral populations (K). The output are K-dimensional ancestry vectors denoting the proportion of the genome of each individual inherited from population K.
 
-The main benefit of DyStruct, when compared to static ancestry approaches such as ADMIXTURE, is DyStruct's emphasis on explaining later populations as mixtures of earlier, pre-existing, populations. That is, later samples tend to appear as mixtures of earlier samples. Because we model samples over time, ancestry components give a direct interpretation of the relationship between populations in the past and populations today.
+The main benefit of DyStruct, when compared to static ancestry approaches such as ADMIXTURE, is DyStruct's emphasis on explaining later populations as mixtures of earlier ones. That is, later samples tend to appear as mixtures of earlier samples. Because we model samples over time, ancestry components give a direct interpretation of the relationship between populations in the past and populations today.
 
 ## Installation
 
@@ -93,10 +92,7 @@ The generation times file contains one line per individual giving the generation
 DyStruct takes several command line arguments:
 
 ```
-Usage:   dystruct [options]
-
 Required Arguments:
-	-h, --help                  Print this help message.
 	--input FILE                Path to genotype matrix: a LOCI x INDIVIDUAL matrix of genotypes in the
                                     EIGENSTRAT genotype format. Each genotype is denoted by either 0, 1, 2, or 9,
                                     where 9 identifies missing entries. There are no spaces between entries.
@@ -107,19 +103,22 @@ Required Arguments:
                                     order as the columns of the input matrix.
 	--output STR                A prefix for output files.
 	--npops INT                 Number of populations.
-	--nloci INT                 Number of loci. This should match the number of loci in the input file.
-	--pop-size INT              Effective population size for all populations.
+	--nloci INT                 Number of loci. This should match the number of loci in the input file. Used
+                                    to to perform sanity checks on input files.
 	--seed INT                  Random seed used to initialize variational parameters
 
 Optional Arguments:
-	--hold-out-fraction DOUBLE  (=0) Optional. Partitions nloci * hold_out_fraction loci into a hold out
-                                    set. The hold out set contains at most one individual per site.
+	-h, --help                  Print this help message.
+	--pop-size INT              (=10000). Effective population size for all populations.
+	--hold-out-fraction DOUBLE  (=0) Optional. Partitions nloci * hold_out_fraction genotypes into a hold out
+                                    set.
 	--hold-out-seed INT         (=28149) Optional. Random seed used to partition SNP data into hold out
                                     and training sets. Use the same seed across replicates to fix the hold
                                     out set.
 	--epochs INT                (=50) Optional. Number of epochs to run before terminating.
 	--no-multi-init             (=false) Optional. Turns off multiple initialization.
-	--no-pseudo-haploid         (=false) Optional. If set, treats pseudo haploid individuals as diploid.```
+	--no-pseudo-haploid         (=false) Optional. If set, treats pseudo haploid individuals as diploid.
+```
 
 
 ### Parallel Computation
@@ -131,7 +130,6 @@ export OMP_NUM_THREADS=2
                --generation-times FILE \
                --output STR \
                --nloci INT \
-               --pop-size INT \
                --seed INT
 ```
 
@@ -148,14 +146,11 @@ DyStruct outputs two files with point estimates for inferred parameters, and a t
 - freqs : the inferred allele frequencies at all time steps
 - theta : the inferred ancestry proportions for all samples
 
-DyStruct also outputs a temporary file, temp\_theta, with the current estimates of the variational parameters for ancestry proportions. Each row is an individual, and each column a population. The number in each entry refers to the number of loci currently assigned to a population.
-
 
 ### Model Choice
-DyStruct takes two optional arguments to hold out a subset of loci to model evaluation. These are `--hold-out-fraction` and `--hold-out-seed`. `--hold-out-fraction` is a number in [0,1] that gives a proportion of sites to partition into a hold out set. At most one site per individual is held out. Thus, if `--hold-out-fraction` is equal to 1, one locus in one individual is put into the hold out set for each SNP. Keeping the `--hold-out-seed` consistent across runs ensures that the same set of loci is held out for each run.
+DyStruct takes two optional arguments to hold out a subset of loci for model evaluation. These are `--hold-out-fraction` and `--hold-out-seed`. `--hold-out-fraction` is a number in [0,1]. A set of genotypes of size `--hold-out-fraction * --nloci` is treated as missing during training. After convergence, DyStruct outputs the conditional log likelihood on the hold out set. The final value can be used to compare runs across K.
 
-After convergence, DyStruct outputs the conditional log likelihood on the hold out set. This is the binomial log likelihood given the current point estimates of ancestry proportions and allele frequencies. The final value can --- and should --- be used to compare runs on the same K, where the run with the highest conditional log likelihood is chosen. Similarly, the conditional log likelihood can be used to choose the "best" value of K. Nonetheless, we emphasize that results should be interpreted across multiple K. 
-
+To compare runs for the same K, DyStruct outputs the final value of the objective function. The run with the highest objective function should be chosen.
 
 ### Running Time
 Running time per iteration primarily depends on three factors. In order of importance, these are: i) how many times the algorithm has previously seen a loci, ii) number of time points, and iii) number of individuals. Earlier iterations tend to be much slower because it takes longer for the local parameter estimates at each locus to converge. Thus, performance during earlier iterations should not be used to estimate run time. In our experience, setting `OMP_NUM_THREADS=K`, DyStruct converged in less than 24 hours on a dataset of ~1600 individuals at ~300000 loci across 11 time points.
