@@ -6,7 +6,9 @@ This folder provides Python3 scripts for common data processing operations and p
 
 
 ## Plotting
-The script `plot_Q.py` plots stacked bar plots for ancestry estimates while (optionally) mantaining colors across K. It has four required arguments:
+The script `plot_Q.py` plots stacked bar plots for ancestry estimates while (optionally) mantaining colors across K. A example is provided in the script `plot_demo.sh`
+
+`plot_Q.py` has three required arguments:
 
 1. the filepath to the Q matrix to plot  
 2. population labels of each sample (one per line, corresponding to each row of Q)
@@ -18,7 +20,11 @@ Calling
 python plot_Q.py Q3 samplelabels poporder
 ```
 
-will plot the results for 3 populations, where samples are grouped by their populations defined in `samplelabels` and ordered according to `poporder.` Within each population, samples are sorted by the ancestry proportions of their major contributing population.
+will plot the results for 3 populations, where samples are grouped by their populations defined in `samplelabels` and ordered according to `poporder.` Within each population, samples are sorted by the ancestry proportions of their major contributing population. Calling
+```
+python plot_Q.py -h
+```
+prints a full list of plotting options to the console. A subset of options are explained in detail below.
 
 
 ### Matching Colors
