@@ -2,6 +2,14 @@
 
 **Current Version**: v1.1.0 (April 2019)
 
+DyStruct is now published in The American Journal for Human Genetics. Please cite our paper:
+
+* Joseph, Tyler A., and Itsik Pe’er. "Inference of Population Structure from Time-Series Genotype Data." The American Journal of Human Genetics (2019). [https://doi.org/10.1016/j.ajhg.2019.06.002](https://www.sciencedirect.com/science/article/pii/S0002929719302277)
+
+#### What's New In v1.1.0 (April 2019)
+
+* Support for pseudo-haploid samples.
+
 #### What's New In v1.0.0 (September 2018)
 
 * Input genotype matrix is now a standard format (EIGENSTRAT .geno)  
